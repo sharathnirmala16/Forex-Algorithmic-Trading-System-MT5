@@ -38,7 +38,7 @@ class MetaTraderData:
     #Used for getting historical data
     def get_historical_data(self, utc_from : datetime, 
                  utc_to : datetime, timeframe = mt.TIMEFRAME_D1,
-                 print_error = False) -> pd.DataFrame:
+                 timezone = 'Asia/Kolkata', print_error = False) -> pd.DataFrame:
         data = pd.DataFrame()
         try:
             if MetaTraderData.internet_connection():
@@ -48,6 +48,7 @@ class MetaTraderData:
                 data['time'] = pd.to_datetime(data['time'], unit = 's')
                 data = data[['time', 'open', 'high', 'low', 'close', 'tick_volume', 'spread']].copy()
                 data = data.rename(columns = {'time':'datetime'})
+                #NOTE change timezone
             else:
                 raise Exception('No internet connection.')
             
@@ -60,7 +61,7 @@ class MetaTraderData:
     
     #get recent data
     def get_data(self, count : int, timeframe = mt.TIMEFRAME_D1,
-                 print_error = False) -> pd.DataFrame:
+                 timezone = 'Asia/Kolkata', print_error = False) -> pd.DataFrame:
         data = pd.DataFrame()
         try:
             if MetaTraderData.internet_connection():
@@ -70,6 +71,7 @@ class MetaTraderData:
                 data['time'] = pd.to_datetime(data['time'], unit = 's')
                 data = data[['time', 'open', 'high', 'low', 'close', 'tick_volume', 'spread']].copy()
                 data = data.rename(columns = {'time':'datetime'})
+                #NOTE change timezone
             else:
                 raise Exception('No internet connection.')
             

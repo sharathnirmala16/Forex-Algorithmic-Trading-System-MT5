@@ -110,12 +110,12 @@ class MetaTraderData:
         return self.__symbol
     
     @symbol.setter
-    def symbol(self, sym : str, print_error = False) -> str:
+    def symbol(self, sym : str, print_error = False) -> None:
         if mt.symbol_info(sym) != None:
             self.__symbol = sym
         elif print_error:
             print('Invalid Symbol')
 
     #Destructor
-    def __del__(self):
+    def __del__(self) -> None:
         mt.shutdown()

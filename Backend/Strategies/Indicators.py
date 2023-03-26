@@ -7,6 +7,18 @@ from datetime import datetime as dt
 #This class can be used to add various technical indicators to the dataframe
 class Indicators:
 
+    #column renaming function
+    @staticmethod
+    def rename_columns(dataframe : pd.DataFrame, to_lower : bool) -> pd.DataFrame:
+        df = dataframe.copy(deep = True)
+        
+        if to_lower:
+            df = df.rename(columns = {'Datetime':'datetime', 'Open':'open', 'High':'high', 'Low':'low', 'Close':'close'})
+        else:
+            df = df.rename(columns = {'datetime':'Datetime', 'open':'Open', 'high':'High', 'low':'Low', 'close':'Close'})
+        
+        return df
+
     #simple moving average
     @staticmethod
     def MA(price_series : pd.Series, n) -> pd.Series:
@@ -24,6 +36,12 @@ class Indicators:
     @staticmethod
     def MACD(dataframe : pd.DataFrame, fast = 12, slow = 26, signal = 9) -> pd.DataFrame:
         df = dataframe.copy()
+        renamed = False
+
+        if df.columns.__contains__('Close'):
+            df = Indicators.rename_columns(dataframe= df, to_lower = True)
+            renamed = True
+
         ema_fast = Indicators.EMA(df['close'], n = fast, com = False)
         ema_slow = Indicators.EMA(df['close'], n = slow, com = False)
 
@@ -32,6 +50,9 @@ class Indicators:
                                                     f'macd_signal_({fast},{slow},{signal})', 
                                                     f'macd_histogram_({fast},{slow},{signal})'
                                                  )
+
+        if renamed:
+            df = Indicators.rename_columns(dataframe= df, to_lower = False)
 
         df[line_name] =  ema_fast - ema_slow
         df[signal_name] = Indicators.MA(df[line_name], signal)
@@ -43,6 +64,12 @@ class Indicators:
     def RSI(dataframe : pd.DataFrame, n = 14) -> pd.DataFrame:
         df = dataframe.copy()
         index = df.index
+        renamed = False
+
+        if df.columns.__contains__('Close'):
+            df = Indicators.rename_columns(dataframe= df, to_lower = True)
+            renamed = True
+
         prices = pd.Series(df['close'].to_numpy().flatten())
 
         change_series = prices - prices.shift(-1)
@@ -54,6 +81,9 @@ class Indicators:
         rsi_series = 100 - (100/(1 + rs_series))
         rsi_series.index = index
 
+        if renamed:
+            df = Indicators.rename_columns(dataframe= df, to_lower = False)
+
         df[f'rsi_({n})'] = rsi_series
         return df
     
@@ -62,6 +92,12 @@ class Indicators:
     def BOLLINGER_BANDS(dataframe : pd.DataFrame, n = 14, deviations = 2) -> pd.DataFrame:
         df = dataframe.copy()
         index = df.index
+        renamed = False
+
+        if df.columns.__contains__('Close'):
+            df = Indicators.rename_columns(dataframe= df, to_lower = True)
+            renamed = True
+
         prices = pd.Series(df['close'].to_numpy().flatten())
         
         mb_series = Indicators.MA(prices, n)
@@ -74,6 +110,10 @@ class Indicators:
         df[f'bb_ub_({n},{deviations})'] = ub_series
         df[f'bb_lb_({n},{deviations})'] = lb_series
         df[f'bb_width_({n},{deviations})'] = bb_width_series
+
+        if renamed:
+            df = Indicators.rename_columns(dataframe= df, to_lower = False)
+
         return df
     
     #Adds Stochastic Oscillator indicator to the dataframe
@@ -81,6 +121,12 @@ class Indicators:
     def STOCHASTIC_OSCILLATOR(dataframe : pd.DataFrame, n = 14, d = 3):
         df = dataframe.copy()
         index = df.index
+        renamed = False
+
+        if df.columns.__contains__('Close'):
+            df = Indicators.rename_columns(dataframe= df, to_lower = True)
+            renamed = True
+
         prices_close = pd.Series(df['close'].to_numpy().flatten())
         prices_high = pd.Series(df['high'].to_numpy().flatten())
         prices_low = pd.Series(df['low'].to_numpy().flatten())
@@ -93,6 +139,10 @@ class Indicators:
 
         df[f'stoch_osc_%K_({n},{d})'] = mod_K
         df[f'stoch_osc_%D_({n},{d})'] = mod_D
+
+        if renamed:
+            df = Indicators.rename_columns(dataframe= df, to_lower = False)
+
         return df
     
     #Adds the Average True Range indicator to the dataframe
@@ -100,6 +150,12 @@ class Indicators:
     def ATR(dataframe : pd.DataFrame, n = 14) -> pd.DataFrame:
         df = dataframe.copy()
         index = df.index
+        renamed = False
+
+        if df.columns.__contains__('Close'):
+            df = Indicators.rename_columns(dataframe= df, to_lower = True)
+            renamed = True
+
         high_series, low_series, close_series = (
                                                     pd.Series(df['high'].to_numpy().flatten()),
                                                     pd.Series(df['low'].to_numpy().flatten()),
@@ -116,6 +172,10 @@ class Indicators:
         atr_series = df1['ATR']
         atr_series.index = index
         df[f'atr_({n})'] = df1['ATR']
+
+        if renamed:
+            df = Indicators.rename_columns(dataframe= df, to_lower = False)
+
         return df
     
     #Adds the Average Directional Movement Index
@@ -124,6 +184,12 @@ class Indicators:
         df = dataframe.copy()
         df1 = dataframe.copy()
         df1 = Indicators.ATR(df1, n)
+        renamed = False
+
+        if df.columns.__contains__('Close'):
+            df = Indicators.rename_columns(dataframe= df, to_lower = True)
+            renamed = True
+
         high_series, low_series, atr_series = (
                                                     pd.Series(df['high'].to_numpy().flatten()),
                                                     pd.Series(df['low'].to_numpy().flatten()),
@@ -140,13 +206,23 @@ class Indicators:
         
         adx_series.index = df.index
         df[f'adx_({n})'] = adx_series
+
+        if renamed:
+            df = Indicators.rename_columns(dataframe= df, to_lower = False)
+
         return df
 
     #Creates a new dataframe that can be used to make a renko chart
     #NOTE Only thing is the lack of support for the volume and spread, to be integrated in FUTURE PATCHES
     @staticmethod
     def RENKO(dataframe : pd.DataFrame, brick_size) -> pd.DataFrame:
-        df = dataframe[['datetime', 'open', 'high', 'low', 'close', 'tick_volume']].copy(deep=True)
+        renamed = False
+        df = pd.DataFrame()
+        if dataframe.columns.__contains__('Close'):
+            df = Indicators.rename_columns(dataframe = dataframe, to_lower = True)
+            renamed = True
+        print(df)
+        df = df[['datetime', 'open', 'high', 'low', 'close', 'tick_volume']].copy(deep=True)
         df = df.rename(columns = {'datetime':'date', 'tick_volume':'volume'})
         df.columns = ['date', 'open', 'high', 'low', 'close', 'volume']
 
@@ -156,4 +232,8 @@ class Indicators:
         renko_df = df.get_ohlc_data()
         renko_df = renko_df.rename(columns = {'date':'datetime'})
         renko_df = renko_df.set_index('datetime', drop = True)
+
+        if renamed:
+            df = Indicators.rename_columns(dataframe = renko_df, to_lower = False)
+
         return renko_df

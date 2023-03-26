@@ -220,15 +220,16 @@ class Indicators:
         df = pd.DataFrame()
         if dataframe.columns.__contains__('Close'):
             df = Indicators.rename_columns(dataframe = dataframe, to_lower = True)
+            df = df[['datetime', 'open', 'high', 'low', 'close', 'tick_volume']].copy(deep=True)
             renamed = True
-
-        df = df[['datetime', 'open', 'high', 'low', 'close', 'tick_volume']].copy(deep=True)
+        else:
+            df = dataframe[['datetime', 'open', 'high', 'low', 'close', 'tick_volume']].copy(deep=True)
         df = df.rename(columns = {'datetime':'date', 'tick_volume':'volume'})
         df.columns = ['date', 'open', 'high', 'low', 'close', 'volume']
 
         df = Renko(df)
         df.brick_size = brick_size
-        
+
         renko_df = df.get_ohlc_data()
         renko_df = renko_df.rename(columns = {'date':'datetime'})
         renko_df = renko_df.set_index('datetime', drop = True)

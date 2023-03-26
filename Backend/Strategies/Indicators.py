@@ -221,7 +221,7 @@ class Indicators:
         if dataframe.columns.__contains__('Close'):
             df = Indicators.rename_columns(dataframe = dataframe, to_lower = True)
             renamed = True
-        print(df)
+
         df = df[['datetime', 'open', 'high', 'low', 'close', 'tick_volume']].copy(deep=True)
         df = df.rename(columns = {'datetime':'date', 'tick_volume':'volume'})
         df.columns = ['date', 'open', 'high', 'low', 'close', 'volume']

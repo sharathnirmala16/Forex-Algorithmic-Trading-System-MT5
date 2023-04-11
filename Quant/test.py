@@ -1,8 +1,13 @@
-from credentials import login_credentials
 from DataClass import MetaTraderData as DataClass
 from Strategies.Indicators import Indicators
 
 symbol = 'USDJPY'
+
+login_credentials = {
+    'login':'89779274',
+    'password':'jUJu#AqE',
+    'server':'OctaFX-Demo'
+}
 
 data_usdjpy = DataClass(
     login_cred = login_credentials,

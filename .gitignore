@@ -1,2 +1,5 @@
 
-Quant/credentials.py
+PipProphet/.env
+credentials.py
+db.sqlite3
+Quant/test.py

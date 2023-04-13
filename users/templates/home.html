@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>PipProphet</title>
+    </head>
+    <body>
+        <div>
+            {% for message in messages %}
+            <div class = "alert alert-{{ message.tags }} alert-dismissible fade show" role = "alert">
+                <strong>
+                    Message:
+                </strong>
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"></button>
+                <span aria-hidden="true">&times;</span>
+            </div>
+            {% endfor %}
+        </div>
+        <div>
+            <h1>PipProphet</h1>
+        </div>
+        <div>
+            {% if user.is_authenticated %}
+            <h2>Welcome to PipProphet, {{ first_name }}</h2>
+            <button type="submit"> <a href="/logout"> Sign Out</button>
+            {% else %}
+            <button type="submit"> <a href="/login"> Log In</button>
+            <button type="submit"> <a href="/signup"> Sign Up</button>
+            {% endif %}
+        </div>
+    </body>
+</html>

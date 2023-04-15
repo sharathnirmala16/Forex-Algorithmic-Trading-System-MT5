@@ -21,12 +21,13 @@
             <h1>PipProphet</h1>
         </div>
         <div>
+            {% csrf_token %}
             {% if user.is_authenticated %}
-            <h2>Welcome to PipProphet, {{ first_name }}</h2>
-            <button type="submit"> <a href="/logout"> Sign Out</button>
+            <h2>Welcome to PipProphet, {{ user.first_name }}</h2>
+            <button type="submit"> <a href="/logout"> Log Out </a></button>
             {% else %}
-            <button type="submit"> <a href="/login"> Log In</button>
-            <button type="submit"> <a href="/signup"> Sign Up</button>
+            <button type="submit"> <a href="/login"> Log In </a></button>
+            <button type="submit"> <a href="/signup"> Sign Up </a></button>
             {% endif %}
         </div>
     </body>

@@ -5,3 +5,4 @@ db.sqlite3
 Quant/test.py
 Quant/test.py
 .env
+__pycache__/

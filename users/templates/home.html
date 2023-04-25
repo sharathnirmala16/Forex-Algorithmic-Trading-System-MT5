@@ -1,8 +1,10 @@
+{% load static %}
 <!DOCTYPE html>
 
 <html>
     <head>
-        <title>PipProphet</title>
+        <title>Pip Prophet</title>
+        <link rel="icon" type="image/x-icon" href="{% static 'images/globe.png' %}"/>
     </head>
     <body>
         <div>
@@ -18,12 +20,12 @@
             {% endfor %}
         </div>
         <div>
-            <h1>PipProphet</h1>
+            <img src="{% static 'images/Logo.png' %}"/>
         </div>
         <div>
             {% csrf_token %}
             {% if user.is_authenticated %}
-            <h2>Welcome to PipProphet, {{ user.first_name }}</h2>
+            <h2>Welcome to Pip Prophet, {{ user.first_name }}</h2>
             <button type="submit"> <a href="/logout"> Log Out </a></button>
             {% else %}
             <button type="submit"> <a href="/login"> Log In </a></button>

@@ -4,6 +4,7 @@ credentials.py
 db.sqlite3
 Quant/test.py
 Quant/test.py
+Quant/Strategies/Testing
 .env
 __pycache__/
 *.pyc

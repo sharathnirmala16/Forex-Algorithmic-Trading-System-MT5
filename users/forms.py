@@ -71,7 +71,8 @@ class CustomUserSignUpForm(UserCreationForm):
                   'demo_login', 'demo_password', 'demo_server',
                   'live_login', 'live_password', 'live_server',
                   'password1', 'password2']
-        
+
+#used to login a user  
 class CustomUserLoginForm(forms.Form):
     email = forms.EmailField(widget=forms.EmailInput(attrs={
         'class': 'form-control', 'placeholder': 'Email'

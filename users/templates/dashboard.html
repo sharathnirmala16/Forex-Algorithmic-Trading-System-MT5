@@ -5,6 +5,8 @@
     <head>
         <title>Pip Prophet</title>
         <link rel="icon" type="image/x-icon" href="{% static 'images/globe.png' %}"/>
+        <link rel="stylesheet" href="{% static 'stylesheets/dashboard.css' %}"/>
+        <script src="{% static 'scripts/dashboard.js' %}"></script>
     </head>
     <body>
         <div>
@@ -23,13 +25,21 @@
             <img src="{% static 'images/Logo.png' %}"/>
         </div>
         <div>
-            {% csrf_token %}
-            {% if user.is_authenticated %}
-            <a href="{% url 'dashboard' %}">Go back to Dashboard</a>
-            {% else %}
-            <button type="submit"> <a href="/login"> Log In </a></button>
-            <button type="submit"> <a href="/signup"> Sign Up </a></button>
-            {% endif %}
+            <div>
+                {% csrf_token %}
+                {% if user.is_authenticated %}
+                <div class="container">
+                    <button id="toggleButton">Options</button>
+                    <div id="options" class="hidden">
+                        <ul>
+                            <li><a href="/backtests">Backtests</a></li>
+                            <li><a href="/">Deployed Algorithms</a></li>
+                            <li><a href="/logout">Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
         </div>
     </body>
 </html>

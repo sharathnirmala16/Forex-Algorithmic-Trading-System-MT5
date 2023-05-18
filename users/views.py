@@ -19,6 +19,12 @@ class SignUpView(CreateView):
 
 class HomeView(TemplateView):
     template_name = 'home.html'
+<<<<<<< Updated upstream
+=======
+    def get(self, request : HttpResponse) -> HttpResponse:
+        form = CustomUserLoginForm()
+        return render(request, self.template_name, {'form': form})
+>>>>>>> Stashed changes
 
 class LoginView(View):
     template_name = 'login.html'

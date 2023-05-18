@@ -6,7 +6,6 @@
         <title>Pip Prophet</title>
         <link rel="icon" type="image/x-icon" href="{% static 'images/globe.png' %}"/>
         <link rel="stylesheet" href="{% static 'stylesheets/backtests.css' %}"/>
-        <script src="{% static 'scripts/backtests.js' %}"></script>
     </head>
     <body>
         <div>
@@ -47,20 +46,21 @@
                 </select>
             
                 {% for strategy, details in strategies_objects.items %}
-                    <div id="{{ strategy }}-params" class="strategy-params" style="display: none;">
+                    <div id="{{ strategy }}-params" class="strategy-params" {% if not forloop.first %}style="display: none;"{% endif %}>
                         {% for param, value in details.items %}
                             {% if param != 'strategy_name' %}
                                 <br>
                                 <label>{{ param }}</label>
-                                <input type="text" name="{{ param }}" value="{{ value }}">
+                                <input type="text" name="{{ strategy }}_{{ param }}" value="{{ value }}">
                             {% endif %}
                         {% endfor %}
                     </div>
                 {% endfor %}
-    
+            
                 <input type="submit" value="Submit" style="display: none;">
-            </form>            
+            </form>
         </div>
         {% endif %}
+        <script src="{% static 'scripts/backtests.js' %}"></script>
     </body>
 </html>

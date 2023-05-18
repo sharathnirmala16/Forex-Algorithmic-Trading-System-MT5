@@ -1,13 +1,16 @@
-const strategySelect = document.getElementById('strategy');
-    strategySelect.addEventListener('change', () => {
-        document.getElementById('strategy-form').submit();
-    });
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOMContentLoaded event fired');
+    const strategySelect = document.getElementById('strategy');
+    const strategyParams = document.getElementsByClassName('strategy-params');
 
-const strategyParams = document.getElementsByClassName('strategy-params');
     strategySelect.addEventListener('change', () => {
         const selectedStrategy = strategySelect.value;
         Array.from(strategyParams).forEach(params => {
-            params.style.display = (params.id === `${selectedStrategy}-params`) ? 'block' : 'none';
+            if (params.id === `${selectedStrategy}-params`) {
+                params.style.display = 'block';
+            } else {
+                params.style.display = 'none';
+            }
         });
-        document.getElementById('strategy-form').submit();
     });
+});

@@ -2,10 +2,10 @@
 PipProphet/.env
 credentials.py
 db.sqlite3
-test.py
 Quant/test.py
 Quant/test.py
 Quant/Strategies/Testing
 .env
 __pycache__/
 *.pyc
+users/test.py

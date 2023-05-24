@@ -15,4 +15,4 @@ class Test:
 
     
 
-Test().func()
+res = Test().func()

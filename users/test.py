@@ -1,9 +1,18 @@
-import temp_crypto
+from DataClass import MetaTraderData
+import MetaTrader5 as mt
 
-message = 'Hello'
-password = '12345'
+class Test:
+    login_cred = {
+        'login': 89779274,
+        'password': 'jUJu#AqE',
+        'server': 'OctaFX-Demo'  
+    }
 
-cipher = temp_crypto.encrypt(message, password)
-print(cipher)
-plaintext = temp_crypto.decrypt(cipher, password)
-print(plaintext)
+    def func(self):
+        data_instance = MetaTraderData(self.login_cred, 'EURUSD')
+        data = data_instance.get_data(50000, 30)
+        print(data) 
+
+    
+
+Test().func()

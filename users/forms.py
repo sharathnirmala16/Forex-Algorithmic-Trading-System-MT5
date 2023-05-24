@@ -114,11 +114,11 @@ class BacktestStrategyParametersForm(forms.ModelForm):
     currency_pairs_combobox = forms.ChoiceField(label='Currency Pair', choices=[])
     timeframes_combobox = forms.ChoiceField(label='Timeframe', choices=[])
     cash_field = forms.CharField(label='Cash', initial=10000)
-    comission_field = forms.CharField(label='Commission', initial=0.0002)
+    commission_field = forms.CharField(label='Commission', initial=0.0002)
     margin_field = forms.CharField(label='Margin', initial=1)
-    trade_on_close_field = forms.NullBooleanField(label='Trade on Close', initial=False)
-    hedging_field = forms.NullBooleanField(label='Hedging' , initial=False)
-    exclusive_orders_field = forms.NullBooleanField(label='Exclusive Orders', initial=False)
+    trade_on_close_field = forms.BooleanField(label='Trade on Close', initial=False, required=False)
+    hedging_field = forms.BooleanField(label='Hedging' , initial=False, required=False)
+    exclusive_orders_field = forms.BooleanField(label='Exclusive Orders', initial=False, required=False)
 
     def __init__(self, *args, **kwargs) -> None:
         strategy_params : dict = kwargs.pop('strategy_params')

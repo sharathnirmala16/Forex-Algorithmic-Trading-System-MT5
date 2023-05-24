@@ -107,8 +107,21 @@ class StrategyParametersView(LoginRequiredMixin, View):
         )
         if request.POST.get('Backtest'):
             if bt_params_form.is_valid():
-                bt_params_model.perform_backtest()
-            return render(request, self.redirect_to, {'bt_params_form':bt_params_form})
+                data : dict = bt_params_form.cleaned_data
+                res = bt_params_model.perform_backtest(
+                    strategy_class=strategy_class,
+                    currency_pair=data.pop('currency_pairs_combobox'),
+                    timeframe=data.pop('timeframes_combobox'),
+                    cash=data.pop('cash_field'),
+                    commission=data.pop('commission_field'),
+                    margin=data.pop('margin_field'),
+                    trade_on_close=data.pop('trade_on_close_field'),
+                    hedging=data.pop('hedging_field'),
+                    exclusive_orders=data.pop('exclusive_orders_field'),
+                    **data
+                )
+                print(res)
+                return render(request, self.redirect_to, {'bt_params_form':bt_params_form, 'results':res})
         elif request.POST.get('Optimize'):
             pass
         return render(request, self.redirect_to, {'bt_params_form':bt_params_form})

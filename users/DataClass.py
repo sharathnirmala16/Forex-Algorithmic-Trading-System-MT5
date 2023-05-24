@@ -98,6 +98,8 @@ class MetaTraderData:
         except Exception as e:
             if print_error:
                 print(e)
+            else:
+                pass
 
         if upper_case_cols:
             data = data.rename(columns = {'datetime':'Date', 'open':'Open', 'high':'High', 'low':'Low', 'close':'Close'})
@@ -126,6 +128,8 @@ class MetaTraderData:
         except Exception as e:
             if print_error:
                 print(e)
+            else:
+                pass
 
         if upper_case_cols:
             data = data.rename(columns = {'datetime':'Date', 'open':'Open', 'high':'High', 'low':'Low', 'close':'Close'})

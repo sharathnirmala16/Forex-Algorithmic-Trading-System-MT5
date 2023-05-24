@@ -30,6 +30,11 @@ class HomeView(TemplateView):
         form = CustomUserLoginForm()
         return render(request, self.template_name, {'form': form})
 
+    def get(self, request : HttpResponse) -> HttpResponse:
+        form = CustomUserLoginForm()
+        return render(request, self.template_name, {'form': form})
+
+
 class LoginView(View):
     template_name = 'login.html'
 

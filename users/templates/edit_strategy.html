@@ -37,11 +37,12 @@
         </div>
         <div>
             {% block content %}
-            <form id="strategy-select" method="post">
+            <form id="strategy-modify" method="post">
                 {% csrf_token %}
-                <label for="strategy">Select a Strategy</label>
-                {{ bt_strategy_form.as_p }}
-                <input type="submit" value="Edit Strategy Parameters" name = "EditStrategyParameters">
+                <label for="strategy">Modify your Strategy</label>
+                {{ bt_params_form.as_p }}
+                <input type="submit" value="Backtest" name = "Backtest">
+                <input type="submit" value="Optimize" name = "Optimize">
             </form>
             {% endblock %}
         </div>

@@ -18,6 +18,8 @@
         <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300;400;500;900&family=Ubuntu:wght@300;400;700&display=swap" rel="stylesheet">
         <script src="https://kit.fontawesome.com/3bfd13a79b.js" crossorigin="anonymous"></script>
         <link rel="stylesheet" href="{% static 'stylesheets/styles.css' %}">
+        <title>Pip Prophet</title>
+        <link rel="icon" type="image/x-icon" href="{% static 'images/globe.png' %}"/>
     </head>
     <body>
 
@@ -224,14 +226,9 @@
             {% endfor %}
         </div>
         <div>
-
-            <h1>PipProphet</h1>
-        </div>
-        <div>
             {% csrf_token %}
             {% if user.is_authenticated %}
-            <h2>Welcome to PipProphet, {{ user.first_name }}</h2>
-            <button type="submit"> <a href="/logout"> Log Out </a></button>
+            <a href="{% url 'dashboard' %}">Go back to Dashboard</a>
             {% else %}
             <button type="submit"> <a href="/login"> Log In </a></button>
             <button type="submit"> <a href="/signup"> Sign Up </a></button>

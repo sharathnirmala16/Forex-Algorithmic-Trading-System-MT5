@@ -10,9 +10,7 @@ class Test:
 
     def func(self):
         data_instance = MetaTraderData(self.login_cred, 'EURUSD')
-        data = data_instance.get_data(50000, 30)
-        print(data) 
+        data = data_instance.get_data(50000, 1)
+        print(data)
 
-    
-
-res = Test().func()
+print(mt.TIMEFRAME_MN1)

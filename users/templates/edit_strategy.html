@@ -46,6 +46,11 @@
             </form>
             {% endblock %}
         </div>
+        <ul>
+            {% for key, value in res.items %}
+            <li>{{key}}: {{value}}</li>
+            {% endfor %}
+        </ul>
         {% endif %}
         <script src="{% static 'scripts/backtests.js' %}"></script>
     </body>

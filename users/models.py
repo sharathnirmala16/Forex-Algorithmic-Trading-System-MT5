@@ -136,12 +136,21 @@ class BacktestStrategyParameters(models.Model):
         #initializing data object
         login_cred = { 'login':self.user.demo_login, 'password':self.user.get_demo_password(), 'server':self.user.demo_server }
         data_instance = MetaTraderData(login_cred, currency_pair)
-        data = data_instance.get_data(50000, timeframe)
+        data = data_instance.get_data(50000, int(timeframe))
         
         #creating an object of the string class
         class_obj = globals()[strategy_class]
         #creating a backtesting class object
-        bt = Backtest(data, class_obj)
+        bt = Backtest(
+            data=data, 
+            strategy=class_obj, 
+            cash=cash, 
+            commission=commission, 
+            margin=margin, 
+            trade_on_close=trade_on_close, 
+            hedging=hedging, 
+            exclusive_orders=exclusive_orders
+        )
 
         #performing backtest and storing results
         results = dict(bt.run(**kwargs))

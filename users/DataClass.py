@@ -2,6 +2,7 @@ import socket
 import numpy as np
 import pandas as pd
 import MetaTrader5 as mt
+from typing import Union
 from datetime import datetime
 
 class MetaTraderData:
@@ -78,8 +79,7 @@ class MetaTraderData:
     def get_historical_data(self, utc_from : datetime, 
                  utc_to : datetime, timeframe = mt.TIMEFRAME_D1,
                  timezone = 'Asia/Kolkata', print_error = False,
-                 upper_case_cols = True) -> pd.DataFrame:
-        data = pd.DataFrame()
+                 upper_case_cols = True) -> Union[pd.DataFrame, None]:
         try:
             if MetaTraderData.internet_connection():
                 mt.initialize()
@@ -95,21 +95,21 @@ class MetaTraderData:
             if data.empty:
                 raise Exception('Invalid parameters passed, unable to obtain data.')
             
+            if upper_case_cols:
+                data = data.rename(columns = {'datetime':'Date', 'open':'Open', 'high':'High', 'low':'Low', 'close':'Close'})
+
+            return data
+        
         except Exception as e:
             if print_error:
                 print(e)
             else:
-                pass
-
-        if upper_case_cols:
-            data = data.rename(columns = {'datetime':'Date', 'open':'Open', 'high':'High', 'low':'Low', 'close':'Close'})
-        return data
+                return None
     
     #get recent data
     def get_data(self, count : int, timeframe = mt.TIMEFRAME_D1,
                  timezone = 'Asia/Kolkata', print_error = False, 
-                 upper_case_cols = True) -> pd.DataFrame:
-        data = pd.DataFrame()
+                 upper_case_cols = True) -> Union[pd.DataFrame, None]:
         try:
             if MetaTraderData.internet_connection():
                 mt.initialize()
@@ -125,15 +125,16 @@ class MetaTraderData:
             if data.empty:
                 raise Exception('Invalid parameters passed, unable to obtain data.')
             
+            if upper_case_cols:
+                data = data.rename(columns = {'datetime':'Date', 'open':'Open', 'high':'High', 'low':'Low', 'close':'Close'})
+
+            return data
+        
         except Exception as e:
             if print_error:
                 print(e)
             else:
-                pass
-
-        if upper_case_cols:
-            data = data.rename(columns = {'datetime':'Date', 'open':'Open', 'high':'High', 'low':'Low', 'close':'Close'})
-        return data
+                return None
     
     #get bid price—highest price buyer is willing to buy for
     def get_bid(self, print_error = False) -> float:

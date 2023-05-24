@@ -100,6 +100,16 @@ class StrategyParametersView(LoginRequiredMixin, View):
             timeframes = bt_params_model.timeframes
         )
         return render(request, self.redirect_to, {'bt_params_form':bt_params_form})
+    
+    @staticmethod
+    def __conv_values(inp_dict) -> dict:
+        out_dict = {}
+        for key, value in inp_dict.items():
+            if value.find('.') != -1:
+                out_dict[key] = float(value)
+            else:
+                out_dict[key] = int(value)
+        return out_dict
         
     def post(self, request : HttpRequest, strategy_class : str, *args, **kwargs) -> HttpResponse:
         bt_params_model = BacktestStrategyParameters(user = request.user)
@@ -116,16 +126,15 @@ class StrategyParametersView(LoginRequiredMixin, View):
                 res = bt_params_model.perform_backtest(
                     strategy_class=strategy_class,
                     currency_pair=data.pop('currency_pairs_combobox'),
-                    timeframe=data.pop('timeframes_combobox'),
-                    cash=data.pop('cash_field'),
-                    commission=data.pop('commission_field'),
-                    margin=data.pop('margin_field'),
-                    trade_on_close=data.pop('trade_on_close_field'),
-                    hedging=data.pop('hedging_field'),
-                    exclusive_orders=data.pop('exclusive_orders_field'),
-                    **data
+                    timeframe=int(data.pop('timeframes_combobox')),
+                    cash=float(data.pop('cash_field')),
+                    commission=float(data.pop('commission_field')),
+                    margin=float(data.pop('margin_field')),
+                    trade_on_close=bool(data.pop('trade_on_close_field')),
+                    hedging=bool(data.pop('hedging_field')),
+                    exclusive_orders=bool(data.pop('exclusive_orders_field')),
+                    **StrategyParametersView.__conv_values(data)
                 )
-                print(res)
                 return render(request, self.redirect_to, {'bt_params_form':bt_params_form, 'results':res})
         elif request.POST.get('Optimize'):
             pass

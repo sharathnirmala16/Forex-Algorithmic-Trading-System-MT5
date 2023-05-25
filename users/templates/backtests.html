@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Pip Prophet</title>
+        <link rel="icon" type="image/x-icon" href="{% static 'images/globe.png' %}"/>
+        <link rel="stylesheet" href="{% static 'stylesheets/backtests.css' %}"/>
+    </head>
+    <body>
+        <!--<div>
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                <strong>Message:</strong>
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"></button>
+                <span aria-hidden="true">&times;</span>
+            </div>
+            {% endfor %}
+        </div>-->
+        <div>
+            <img src="{% static 'images/Logo.png' %}"/>
+        </div>
+        {% csrf_token %}
+        {% if user.is_authenticated %}
+        <div>
+            <div class="container">
+                <button id="toggleButton">Options</button>
+                <div id="options" class="hidden">
+                    <ul>
+                        <li><a href="/dashboard">Dashboard</a></li>
+                        <li><a href="/">Deployed Algorithms</a></li>
+                        <li><a href="/logout">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div>
+            {% block content %}
+            <form id="strategy-select" method="post">
+                {% csrf_token %}
+                <label for="strategy">Select a Strategy</label>
+                {{ bt_strategy_form.as_p }}
+                <input type="submit" value="Edit Strategy Parameters" name = "EditStrategyParameters">
+            </form>
+            {% endblock %}
+        </div>
+        {% endif %}
+        <script src="{% static 'scripts/backtests.js' %}"></script>
+    </body>
+</html>

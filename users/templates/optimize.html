@@ -38,18 +38,17 @@
         </div>
         <div>
             {% block content %}
-            <form id="strategy-modify" method="post">
+            <form id="strategy-optimize" method="post">
                 {% csrf_token %}
-                <label for="strategy">Modify your Strategy</label>
-                {{ bt_params_form.as_p }}
-                <input type="submit" value="Backtest" name = "Backtest">
+                <label for="strategy">Choose Optimization Parameters</label>
+                {{ bt_optimize_form.as_p }}
                 <input type="submit" value="Optimize" name = "Optimize">
             </form>
             {% endblock %}
         </div>
         <div>
             <ul>
-                {% for key, value in results.items %}
+                {% for key, value in value_check.items %}
                 <li>{{key}}: {{value}}</li>
                 {% endfor %}
             </ul>

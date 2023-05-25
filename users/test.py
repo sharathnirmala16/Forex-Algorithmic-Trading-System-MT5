@@ -1,16 +1,7 @@
-from DataClass import MetaTraderData
-import MetaTrader5 as mt
+str1 = '0.005, 20, 0.005'
+str2 = '4,20, 1'
 
-class Test:
-    login_cred = {
-        'login': 89779274,
-        'password': 'jUJu#AqE',
-        'server': 'OctaFX-Demo'  
-    }
 
-    def func(self):
-        data_instance = MetaTraderData(self.login_cred, 'EURUSD')
-        data = data_instance.get_data(50000, 1)
-        print(data)
 
-print(mt.TIMEFRAME_MN1)
+li = [float(ele) if '.' in ele else int(ele) for ele in str1.split(',')]
+print(li)

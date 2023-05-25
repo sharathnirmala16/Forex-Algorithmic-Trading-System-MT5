@@ -123,22 +123,72 @@ class StrategyParametersView(LoginRequiredMixin, View):
         if request.POST.get('Backtest'):
             if bt_params_form.is_valid():
                 data : dict = bt_params_form.cleaned_data
-                res = bt_params_model.perform_backtest(
-                    strategy_class=strategy_class,
-                    currency_pair=data.pop('currency_pairs_combobox'),
-                    timeframe=int(data.pop('timeframes_combobox')),
-                    cash=float(data.pop('cash_field')),
-                    commission=float(data.pop('commission_field')),
-                    margin=float(data.pop('margin_field')),
-                    trade_on_close=bool(data.pop('trade_on_close_field')),
-                    hedging=bool(data.pop('hedging_field')),
-                    exclusive_orders=bool(data.pop('exclusive_orders_field')),
-                    **StrategyParametersView.__conv_values(data)
-                )
-                return render(request, self.redirect_to, {'bt_params_form':bt_params_form, 'results':res})
+                try:
+                    bt_params_model.store_backtest_params(
+                        strategy_class=strategy_class,
+                        currency_pair=data.pop('currency_pairs_combobox'),
+                        timeframe=int(data.pop('timeframes_combobox')),
+                        cash=float(data.pop('cash_field')),
+                        commission=float(data.pop('commission_field')),
+                        margin=float(data.pop('margin_field')),
+                        trade_on_close=bool(data.pop('trade_on_close_field')),
+                        hedging=bool(data.pop('hedging_field')),
+                        exclusive_orders=bool(data.pop('exclusive_orders_field')),
+                    )
+                    res = bt_params_model.perform_backtest(**StrategyParametersView.__conv_values(data))
+                    return render(request, self.redirect_to, {'bt_params_form':bt_params_form, 'results':res})
+                except Exception as e:
+                    res = {'Error': e}
+                    return render(request, self.redirect_to, {'bt_params_form':bt_params_form, 'results':res})
         elif request.POST.get('Optimize'):
-            pass
+            if bt_params_form.is_valid():
+                data = bt_params_form.cleaned_data
+                data = {
+                    'strategy_class':strategy_class,
+                    'timeframe': int(data.pop('timeframes_combobox')),
+                    'currency_pair':data.pop('currency_pairs_combobox'),
+                    'cash': float(data.pop('cash_field')),
+                    'commission': float(data.pop('commission_field')),
+                    'margin': float(data.pop('margin_field')),
+                    'trade_on_close': bool(data.pop('trade_on_close_field')),
+                    'hedging': bool(data.pop('hedging_field')),
+                    'exclusive_orders': bool(data.pop('exclusive_orders_field')),
+                }
+                request.session['bt_params'] = data
+                return redirect(reverse_lazy('optimize', kwargs = {'strategy_class': strategy_class}))
         return render(request, self.redirect_to, {'bt_params_form':bt_params_form})
+    
+class StrategyOptimizationView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    redirect_to = 'optimize.html'
+
+    def get(self, request : HttpRequest, strategy_class : str, *args, **kwargs) -> HttpResponse:
+        bt_params_model = BacktestStrategyParameters(user = request.user)
+        bt_params_model.load_parameters(strategy_class)
+        params_instance : BacktestStrategyParameters = request.session.get('bt_params', {})
+        bt_optimize_form = BacktestStrategyOptimizeForm(
+            request.GET,
+            strategy_params = bt_params_model.strategy_params
+        )
+        return render(request, self.redirect_to, {'bt_optimize_form':bt_optimize_form})
+    
+    def post(self, request : HttpRequest, strategy_class : str, *args, **kwargs) -> HttpResponse:
+        bt_params_model = BacktestStrategyParameters(user = request.user)
+        bt_params_model.load_parameters(strategy_class)
+        params_instance : BacktestStrategyParameters = request.session.get('bt_params', {})
+        bt_optimize_form = BacktestStrategyOptimizeForm(
+            request.POST,
+            strategy_params = bt_params_model.strategy_params
+        )
+        if bt_optimize_form.is_valid():
+            data : dict = bt_optimize_form.cleaned_data
+            for key in data.keys():
+                params_instance[key] = data[key]
+            for key in bt_params_model.strategy_params:
+                params_instance[key] = [float(ele) if '.' in ele else int(ele) for ele in params_instance[key].split(',')]
+            bt_optimize_model = BacktestStrategyOptimization(user = request.user)
+            res = bt_optimize_model.optimize_strategy(**params_instance)
+        return render(request, self.redirect_to, {'bt_optimize_form':bt_optimize_form})
     
 class LogoutView(View):
     def get(self, request : HttpRequest, *args, **kwargs) -> HttpResponse:

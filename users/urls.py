@@ -10,4 +10,5 @@ urlpatterns = [
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
     path('backtests/', BacktestStrategyClassesView.as_view(), name='backtests'),
     path('backtests/<str:strategy_class>/', StrategyParametersView.as_view(), name='edit_strategy'),
+    path('backtests/<str:strategy_class>/optimize/', StrategyOptimizationView.as_view(), name='optimize'),
 ]

@@ -109,7 +109,7 @@ class MetaTraderData:
     #get recent data
     def get_data(self, count : int, timeframe = mt.TIMEFRAME_D1,
                  timezone = 'Asia/Kolkata', print_error = False, 
-                 upper_case_cols = True) -> Union[pd.DataFrame, None]:
+                 upper_case_cols = True, datetime_index = True) -> Union[pd.DataFrame, None]:
         try:
             if MetaTraderData.internet_connection():
                 mt.initialize()
@@ -127,6 +127,10 @@ class MetaTraderData:
             
             if upper_case_cols:
                 data = data.rename(columns = {'datetime':'Date', 'open':'Open', 'high':'High', 'low':'Low', 'close':'Close'})
+                if datetime_index:
+                    data = data.set_index('Date')
+            elif datetime_index:
+                data = data.set_index('datetime')
 
             return data
         

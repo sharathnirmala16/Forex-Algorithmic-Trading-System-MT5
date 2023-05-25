@@ -138,3 +138,40 @@ class BacktestStrategyParametersForm(forms.ModelForm):
     class Meta:
         model = BacktestStrategyParameters
         fields = []
+
+class BacktestStrategyOptimizeForm(forms.ModelForm):
+    maximize_combobox = forms.ChoiceField(label='Maximize', choices=[])
+    technique_combobox = forms.ChoiceField(label='Optimization Technique', choices=[])
+    constraint_function_field = forms.CharField(
+        label='Python Lambda Functions', 
+        widget=forms.Textarea(attrs={
+            'placeholder':'For Advanced Users. Enter Lambda Functions to act as constraints.'
+        }), required=False)
+
+    @staticmethod
+    def __list_to_lt(inp_list) -> list:
+        out_dict = {}
+        for element in inp_list:
+            out_dict[element] = element
+        return out_dict.items()
+
+    def __init__(self, *args, **kwargs) -> None:
+        strategy_params : dict = kwargs.pop('strategy_params')
+        super().__init__(*args, **kwargs)
+
+        self.fields['maximize_combobox'].choices = BacktestStrategyOptimizeForm.__list_to_lt([
+            'Exposure Time [%]', 'Return [%]', 'Sharpe Ratio', 
+            'Win Rate [%]', 'Profit Factor','Expectancy [%]','SQN'
+        ])
+        self.fields['technique_combobox'].choices = {
+            'grid':'Cartesian Grid Search',
+            'skopt':'Bayesian Optimization',
+        }.items()
+
+        for param, value in strategy_params.items():
+            self.fields[param] = forms.CharField(label=param, required=True)
+
+
+    class Meta:
+        model = BacktestStrategyOptimization
+        fields = []

@@ -11,6 +11,7 @@ from .DataClass import *
 from backtesting import Backtest, Strategy
 import os
 import sys
+import inspect
 import cryptocode
 load_dotenv()
 
@@ -103,6 +104,9 @@ class BacktestStrategyClasses(models.Model):
 class BacktestStrategyParameters(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
 
+    class Meta:
+        managed = False
+
     def load_parameters(self, strategy_class : str) -> None:
         self.strategy_class = strategy_class
         current_module = sys.modules[BacktestStrategyParameters.__module__]
@@ -128,28 +132,38 @@ class BacktestStrategyParameters(models.Model):
         self.currency_pairs = MetaTraderData.currency_pairs
         self.timeframes = MetaTraderData.timeframes
 
-    def perform_backtest(
-        self, strategy_class : str, currency_pair : str, timeframe : int,
+    def store_backtest_params(self, strategy_class : str, currency_pair : str, timeframe : int,
         cash : float, commission : float, margin : float, trade_on_close: bool,
-        hedging : bool, exclusive_orders : bool, **kwargs) -> dict:
+        hedging : bool, exclusive_orders : bool):
+        self.strategy_class = strategy_class
+        self.currency_pair = currency_pair
+        self.timeframe = timeframe
+        self.cash = cash
+        self.commission = commission
+        self.margin = margin
+        self.trade_on_close = trade_on_close
+        self.hedging = hedging
+        self.exclusive_orders = exclusive_orders
 
+        self.login_cred = { 'login':self.user.demo_login, 'password':self.user.get_demo_password(), 'server':self.user.demo_server }
+        self.strategy_obj = globals()[self.strategy_class]
+
+
+    def perform_backtest(self, **kwargs) -> dict:
         #initializing data object
-        login_cred = { 'login':self.user.demo_login, 'password':self.user.get_demo_password(), 'server':self.user.demo_server }
-        data_instance = MetaTraderData(login_cred, currency_pair)
-        data = data_instance.get_data(50000, int(timeframe))
+        data_instance = MetaTraderData(self.login_cred, self.currency_pair)
+        data = data_instance.get_data(50000, int(self.timeframe))
         
-        #creating an object of the string class
-        class_obj = globals()[strategy_class]
         #creating a backtesting class object
         bt = Backtest(
             data=data, 
-            strategy=class_obj, 
-            cash=cash, 
-            commission=commission, 
-            margin=margin, 
-            trade_on_close=trade_on_close, 
-            hedging=hedging, 
-            exclusive_orders=exclusive_orders
+            strategy=self.strategy_obj, 
+            cash=self.cash, 
+            commission=self.commission, 
+            margin=self.margin, 
+            trade_on_close=self.trade_on_close, 
+            hedging=self.hedging, 
+            exclusive_orders=self.exclusive_orders
         )
 
         #performing backtest and storing results
@@ -159,6 +173,81 @@ class BacktestStrategyParameters(models.Model):
         results.pop('_trades')
 
         return results
+    
+class BacktestStrategyOptimization(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+
+    class Meta:
+        managed = False
+
+    def optimize_strategy(self, **kwargs) -> dict:
+        login_cred = { 'login':self.user.demo_login, 'password':self.user.get_demo_password(), 'server':self.user.demo_server }
+        strategy_class = kwargs.pop('strategy_class')
+        strategy_obj = globals()[strategy_class]
+
+        #initializing data object
+        data_instance = MetaTraderData(login_cred, kwargs.pop('currency_pair'))
+        data = data_instance.get_data(50000, int(kwargs.pop('timeframe')))
+
+        #creating a backtesting class object
+        bt = Backtest(
+            data=data, 
+            strategy=strategy_obj, 
+            cash=kwargs.pop('cash'), 
+            commission=kwargs.pop('commission'), 
+            margin=kwargs.pop('margin'), 
+            trade_on_close=kwargs.pop('trade_on_close'), 
+            hedging=kwargs.pop('hedging'), 
+            exclusive_orders=kwargs.pop('exclusive_orders')
+        )
+
+        current_module = sys.modules[BacktestStrategyParameters.__module__]
+
+        base_class = getattr(current_module, 'Strategy')
+        base_class_attr = { 
+            attr: getattr(base_class, attr) 
+            for attr in dir(base_class) 
+            if not callable(getattr(base_class, attr)) and 
+            not attr.startswith('__') and 
+            not attr.startswith('_')
+        }
+
+        strategy_params = {
+            attr: getattr(strategy_class, attr) 
+            for attr in dir(strategy_class)
+            if not callable(getattr(strategy_class, attr)) and 
+            not attr.startswith('__') and 
+            not attr.startswith('_') and
+            attr not in base_class_attr and
+            attr != 'strategy_name'
+        }
+
+        for key in strategy_params.keys():
+            if type(kwargs[key][0]) == float:
+                kwargs[key] = np.arange(range(kwargs[key][0], kwargs[key][1], kwargs[key][2])).tolist()
+            else:
+                kwargs[key] = list(range(kwargs[key][0], kwargs[key][1], kwargs[key][2]))
+
+        constraint = None
+        try:
+            constraint = eval(kwargs.pop('constraint_function_field'))
+        except:
+            constraint = None
+
+        res = bt.optimize(
+            method=kwargs.pop('technique_combobox'),
+            maximize=kwargs.pop('maximize_combobox'),
+            constraint=constraint,
+            **kwargs
+        )['_strategy']
+
+        params = {
+            param: value 
+            for param, value in inspect.getmembers(res, lambda member: not inspect.ismethod(member))
+            if param in strategy_params.keys()
+        }
+
+        print(params)
     
 def backtest_strategy_post_init(sender, instance, **kwargs):
     instance.load_strategy_classes()

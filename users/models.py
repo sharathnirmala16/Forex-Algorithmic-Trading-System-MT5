@@ -176,7 +176,6 @@ class BacktestStrategyParameters(models.Model):
         cwd = os.getcwd()
         file_name = 'users\\templates\\html_files\\plot.html'
         file_path = os.path.join(cwd, file_name)
-        print(file_path)
         bt.plot(resample=False, open_browser = False, filename=file_path)
 
         return results

@@ -56,8 +56,9 @@ class MetaTraderData:
                     self.__symbol = symbol
                 else:
                     raise Exception('Invalid Symbol.')
-                mt.login(login_cred['login'], login_cred['password'], login_cred['server'])
-
+                login_ok = mt.login(login_cred['login'], login_cred['password'], login_cred['server'])
+                if not login_ok:
+                    raise Exception('Failed to connect to account.')
                 if print_acc_info:
                     print(mt.account_info())
             else:
@@ -65,6 +66,7 @@ class MetaTraderData:
         except Exception as e:
             if print_error:
                 print(e)
+                print(mt.last_error())
 
     #checks for internet connection
     @staticmethod
@@ -103,6 +105,7 @@ class MetaTraderData:
         except Exception as e:
             if print_error:
                 print(e)
+                print(mt.last_error())
             else:
                 return None
     
@@ -137,6 +140,7 @@ class MetaTraderData:
         except Exception as e:
             if print_error:
                 print(e)
+                print(mt.last_error())
             else:
                 return None
     
@@ -150,6 +154,7 @@ class MetaTraderData:
         except Exception as e:
             if print_error:
                 print(e)
+                print(mt.last_error())
         return -1
 
     #get ask price—lowest price seller is willing to sell for
@@ -162,6 +167,7 @@ class MetaTraderData:
         except Exception as e:
             if print_error:
                 print(e)
+                print(mt.last_error())
         return -1
         
     #getter and setter methods

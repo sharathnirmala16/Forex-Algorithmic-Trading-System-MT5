@@ -45,14 +45,20 @@
                 <input type="submit" value="Backtest" name = "Backtest">
                 <input type="submit" value="Optimize" name = "Optimize">
             </form>
-            {% endblock %}
-        </div>
-        <div>
-            <ul>
-                {% for key, value in results.items %}
-                <li>{{key}}: {{value}}</li>
-                {% endfor %}
-            </ul>
+            <div>
+                <ul>
+                    {% for key, value in results.items %}
+                    <li>{{key}}: {{value}}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div>
+                <form target="_blank" method="post">
+                  {% csrf_token %}
+                  <input type="submit" value="Plot" name = "Plot">
+                </form>
+              </div>
+              {% endblock %}
         </div>
         {% endif %}
     </body>

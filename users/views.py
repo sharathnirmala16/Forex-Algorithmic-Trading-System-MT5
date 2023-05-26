@@ -112,19 +112,19 @@ class StrategyParametersView(LoginRequiredMixin, View):
         return out_dict
         
     def post(self, request : HttpRequest, strategy_class : str, *args, **kwargs) -> HttpResponse:
-        bt_params_model = BacktestStrategyParameters(user = request.user)
-        bt_params_model.load_parameters(strategy_class)
+        self.bt_params_model = BacktestStrategyParameters(user = request.user)
+        self.bt_params_model.load_parameters(strategy_class)
         bt_params_form = BacktestStrategyParametersForm(
             request.POST,
-            strategy_params = bt_params_model.strategy_params,
-            currency_pairs = bt_params_model.currency_pairs,
-            timeframes = bt_params_model.timeframes
+            strategy_params = self.bt_params_model.strategy_params,
+            currency_pairs = self.bt_params_model.currency_pairs,
+            timeframes = self.bt_params_model.timeframes
         )
         if request.POST.get('Backtest'):
             if bt_params_form.is_valid():
                 data : dict = bt_params_form.cleaned_data
                 try:
-                    bt_params_model.store_backtest_params(
+                    self.bt_params_model.store_backtest_params(
                         strategy_class=strategy_class,
                         currency_pair=data.pop('currency_pairs_combobox'),
                         timeframe=int(data.pop('timeframes_combobox')),
@@ -135,11 +135,19 @@ class StrategyParametersView(LoginRequiredMixin, View):
                         hedging=bool(data.pop('hedging_field')),
                         exclusive_orders=bool(data.pop('exclusive_orders_field')),
                     )
-                    res = bt_params_model.perform_backtest(**StrategyParametersView.__conv_values(data))
+                    res = self.bt_params_model.perform_backtest(**StrategyParametersView.__conv_values(data))
                     return render(request, self.redirect_to, {'bt_params_form':bt_params_form, 'results':res})
                 except Exception as e:
                     res = {'Error': e}
                     return render(request, self.redirect_to, {'bt_params_form':bt_params_form, 'results':res})
+        elif request.POST.get('Plot'):
+            cwd = os.getcwd()
+            file_name = 'users\\templates\\html_files\\plot.html'
+            file_path = os.path.join(cwd, file_name)
+            html_content = ''
+            with open(file_path, 'r') as file:
+                html_content = file.read()
+            return HttpResponse(html_content)
         elif request.POST.get('Optimize'):
             if bt_params_form.is_valid():
                 data = bt_params_form.cleaned_data

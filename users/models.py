@@ -172,6 +172,13 @@ class BacktestStrategyParameters(models.Model):
         results.pop('_equity_curve')
         results.pop('_trades')
 
+        #creating the plot
+        cwd = os.getcwd()
+        file_name = 'users\\templates\\html_files\\plot.html'
+        file_path = os.path.join(cwd, file_name)
+        print(file_path)
+        bt.plot(resample=False, open_browser = False, filename=file_path)
+
         return results
     
 class BacktestStrategyOptimization(models.Model):

@@ -253,7 +253,7 @@ class BacktestStrategyOptimization(models.Model):
             if param in strategy_params.keys()
         }
 
-        print(params)
+        return params
     
 def backtest_strategy_post_init(sender, instance, **kwargs):
     instance.load_strategy_classes()

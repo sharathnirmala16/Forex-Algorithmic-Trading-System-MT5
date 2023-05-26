@@ -5,31 +5,30 @@
     <head>
         <title>Sign Up • Pip Prophet</title>
         <link rel="icon" type="image/x-icon" href="{% static 'images/globe.png' %}"/>
+        <link rel="stylesheet" href="{% static 'stylesheets/signup.css' %}">
     </head>
     <body>
-        <div>
+        <div class="container">
             {% for message in messages %}
-            <div class = "alert alert-{{ message.tags }} alert-dismissible fade show" role = "alert">
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
                 <strong>
                     Message:
                 </strong>
                 {{ message }}
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close"> </button>
-                <span aria-hidden="true">&times;</span>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
-                {% endfor %}
-            </div>
-        <div>
-        <div>
-            <h1>Sign Up today for a Pip Prophet account!</h1>
-        </div>
-        <div>
+            {% endfor %}
+            <h1>Pip Prophet</h1>
             {% block content %}
             <h2>Sign Up</h2>
             <form method="post">
                 {% csrf_token %}
                 {{ form.as_p }}
-                <button type="submit">Sign Up</button>
+                <div class="center-button">
+                    <button type="submit">Sign Up</button>
+                </div>
             </form>
             {% endblock %}
         </div>

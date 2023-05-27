@@ -6,28 +6,31 @@ import MetaTrader5 as mt
 from DataClass import MetaTraderData
 from abc import ABCMeta, abstractmethod, abstractstaticmethod
 
-class DeployableStrategy(metaclass = ABCMeta):
+class AbstractStrategy(metaclass = ABCMeta):
     _lot_size : float = None
     _login_cred : dict = None
     _currency_pair : str = None
     _timeframe : int = None
     repeat_time : int = None
     _deviation : int = None
+    _dataframe_size : int = None
     _strategy_name : str = 'Deployable Strategy Abstract Class'
 
-    def __init__(self, lot_size : float, login_cred : dict, currency_pair : str, timeframe : int, repeat_time : int,deviation : int, print_error : bool = False) -> None:
+    def __init__(self, lot_size : float, login_cred : dict, currency_pair : str, timeframe : int, repeat_time : int, deviation : int, dataframe_size : int, print_error : bool = False) -> None:
         self._lot_size = lot_size
         self._login_cred = login_cred
         self._currency_pair = currency_pair
         self._timeframe = timeframe
         self.repeat_time = repeat_time
         self._deviation = deviation
+        self._dataframe_size = dataframe_size
 
         try:
             login_ok = mt.login(self._login_cred['login'], self._login_cred['password'], self._login_cred['server'])
             if not login_ok:
                 raise Exception('Failed to connect to account.')
             self.data_obj = MetaTraderData(self._login_cred, self._currency_pair)
+            self._data = self.data_obj.get_data(count=self._dataframe_size, timeframe=self._timeframe, print_error=print_error)
         except Exception as e:
             if print_error:
                 print(e)
@@ -150,6 +153,14 @@ class DeployableStrategy(metaclass = ABCMeta):
             order = {}
 
         return order
+    
+    def _refresh(self) -> None:
+        self._data = self.data_obj.get_data(count=500, timeframe=self._timeframe)
+        self.apply_indicators()
+
+    @abstractmethod
+    def apply_indicators(self) -> None:
+        pass
         
     @abstractmethod
     def init(self) -> None:
@@ -159,7 +170,9 @@ class DeployableStrategy(metaclass = ABCMeta):
     def next(self) -> None:
         pass
 
-class BuySellTest(DeployableStrategy):
-    
-    def __init__(self, lot_size: float, login_cred: dict, currency_pair: str, timeframe: int, repeat_time: int, deviation: int, print_error: bool = False) -> None:
-        super().__init__(lot_size, login_cred, currency_pair, timeframe, repeat_time, deviation, print_error)
+class BuySellTest(AbstractStrategy):
+    def __init__(self, lot_size: float, login_cred: dict, currency_pair: str, timeframe: int, repeat_time: int, deviation: int, dataframe_size: int, print_error: bool = False) -> None:
+        super().__init__(lot_size, login_cred, currency_pair, timeframe, repeat_time, deviation, dataframe_size, print_error)
+
+    def init(self) -> None:
+        pass

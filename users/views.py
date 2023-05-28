@@ -196,7 +196,7 @@ class StrategyOptimizationView(LoginRequiredMixin, View):
                 params_instance[key] = [float(ele) if '.' in ele else int(ele) for ele in params_instance[key].split(',')]
             bt_optimize_model = BacktestStrategyOptimization(user = request.user)
             res = bt_optimize_model.optimize_strategy(**params_instance)
-        return render(request, self.redirect_to, {'bt_optimize_form':bt_optimize_form})
+        return render(request, self.redirect_to, {'bt_optimize_form':bt_optimize_form, 'value_check':res})
     
 class LogoutView(View):
     def get(self, request : HttpRequest, *args, **kwargs) -> HttpResponse:

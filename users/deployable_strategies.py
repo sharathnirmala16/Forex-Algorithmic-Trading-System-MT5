@@ -16,7 +16,7 @@ class AbstractStrategy(metaclass = ABCMeta):
     _deviation : int = None
     _dataframe_size : int = None
     _print_error : bool = None
-    _strategy_name : str = 'Deployable Strategy Abstract Class'
+    strategy_name : str = 'Deployable Strategy Abstract Class'
     _active_trades : list = []
 
     def __init__(
@@ -279,3 +279,35 @@ class BuySellTest(AbstractStrategy):
                 self.close(self._active_trades[0]['ticket'])
 
 
+class RSIStrategy(AbstractStrategy):
+    strategy_name = 'Simple RSI Strategy'
+    rsi_period = 14
+    ma_period = 50
+    tp_bar = 2
+    sl_bar = 20
+
+    def __init__(
+            self, 
+            lot_size: float, 
+            login_cred: dict, 
+            currency_pair: str, 
+            timeframe: int, 
+            repeat_time: int, 
+            deviation: int, 
+            dataframe_size: int, 
+            print_error: bool = False) -> None:
+        super().__init__(lot_size, login_cred, currency_pair, timeframe, repeat_time, deviation, dataframe_size, print_error)
+    
+    def apply_indicators(self) -> None:
+        self._data['rsi'] = ta.momentum.rsi(self._data['close'], self.rsi_period)
+        self._data['ma'] = ta.trend.sma_indicator(self._data['close'], self.ma_period)
+
+    def next(self) -> None:
+        if len(self._active_trades) == 0:
+            pass
+        else:
+            price = self._data['Close'][-1]
+            if self._data['rsi'][-1] >= 70 and self._data['ma'][-1] <= price:
+                self.sell(sl = price + (self.sl_bar * 5e-4), tp = price - (self.tp_bar * 5e-4))
+            elif self._data['rsi'][-1] <= 30 and self._data['ma'][-1] >= price:
+                self.buy(sl = price - (self.sl_bar * 5e-4), tp = price + (self.tp_bar * 5e-4))

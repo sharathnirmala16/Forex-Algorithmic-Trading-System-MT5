@@ -246,12 +246,10 @@ class BacktestStrategyOptimization(models.Model):
             constraint=constraint,
             **kwargs
         )['_strategy']
-
         params = {
             param: value 
-            for param, value in inspect.getmembers(res, lambda member: not inspect.ismethod(member))
-            if param in strategy_params.keys()
-        }
+            for param, value in vars(res).items()
+        }['_params']
 
         return params
     

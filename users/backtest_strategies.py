@@ -29,6 +29,7 @@ class RSIStrategy(Strategy):
     ma_period = 50
     tp_bar = 2
     sl_bar = 20
+    bar_gap = 5e-4
 
     def init(self) -> None:
         close = self.data['Close']
@@ -41,9 +42,9 @@ class RSIStrategy(Strategy):
         else:
             price = self.data['Close'][-1]
             if self.rsi[-1] >= 70 and self.ma[-1] <= price:
-                self.sell(sl = price + (self.sl_bar * 5e-4), tp = price - (self.tp_bar * 5e-4))
-            elif self.rsi[-1] <= 30 and self.ma[-1] <= price:
-                self.buy(sl = price - (self.sl_bar * 5e-4), tp = price + (self.tp_bar * 5e-4))
+                self.sell(sl = price + (self.sl_bar * self.bar_gap), tp = price - (self.tp_bar * self.bar_gap))
+            elif self.rsi[-1] <= 30 and self.ma[-1] >= price:
+                self.buy(sl = price - (self.sl_bar * self.bar_gap), tp = price + (self.tp_bar * self.bar_gap))
 
 #<Strategy StaticGridStrategy(line_count=7,grid_gap=0.0025583121776463665,rsi_period=93)>
 class StaticGridStrategy(Strategy):

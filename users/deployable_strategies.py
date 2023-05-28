@@ -187,6 +187,16 @@ class AbstractStrategy(metaclass = ABCMeta):
 
         return order
     
+    def _load_kwargs_to_static(self, **kwargs) -> None:
+        static_vars = {
+            param: value 
+            for param, value in vars(self.__class__).items() 
+            if param not in vars(super.__class__).keys() and 
+            (type(value) is int or type(value) is float)
+        }
+        for param, value in static_vars.items():
+            setattr(self.__class__, param, kwargs.pop(param, value))
+    
     def _refresh(self) -> None:
         self._data = self.data_obj.get_data(count=self._dataframe_size, timeframe=self._timeframe)
         self.apply_indicators()
@@ -231,6 +241,7 @@ class ExecutionEngine:
             *args, **kwargs
         )
 
+        self.__instance._load_kwargs_to_static(**kwargs)
         self.__instance.init()
 
     def execute(self) -> None:
@@ -285,6 +296,7 @@ class RSIStrategy(AbstractStrategy):
     ma_period = 50
     tp_bar = 2
     sl_bar = 20
+    bar_gap = 0.0005
 
     def __init__(
             self, 
@@ -295,12 +307,16 @@ class RSIStrategy(AbstractStrategy):
             repeat_time: int, 
             deviation: int, 
             dataframe_size: int, 
-            print_error: bool = False) -> None:
+            print_error: bool = False,
+            *args, **kwargs) -> None:
         super().__init__(lot_size, login_cred, currency_pair, timeframe, repeat_time, deviation, dataframe_size, print_error)
+
+    def init(self) -> None:
+        pass
     
     def apply_indicators(self) -> None:
-        self._data['rsi'] = ta.momentum.rsi(self._data['close'], self.rsi_period)
-        self._data['ma'] = ta.trend.sma_indicator(self._data['close'], self.ma_period)
+        self._data['rsi'] = ta.momentum.rsi(self._data['Close'], self.rsi_period)
+        self._data['ma'] = ta.trend.sma_indicator(self._data['Close'], self.ma_period)
 
     def next(self) -> None:
         if len(self._active_trades) == 0:
@@ -308,6 +324,7 @@ class RSIStrategy(AbstractStrategy):
         else:
             price = self._data['Close'][-1]
             if self._data['rsi'][-1] >= 70 and self._data['ma'][-1] <= price:
-                self.sell(sl = price + (self.sl_bar * 5e-4), tp = price - (self.tp_bar * 5e-4))
+                self.sell(sl = price + (self.sl_bar * self.bar_gap), tp = price - (self.tp_bar * self.bar_gap))
             elif self._data['rsi'][-1] <= 30 and self._data['ma'][-1] >= price:
-                self.buy(sl = price - (self.sl_bar * 5e-4), tp = price + (self.tp_bar * 5e-4))
+                self.buy(sl = price - (self.sl_bar * self.bar_gap), tp = price + (self.tp_bar * self.bar_gap))
+        

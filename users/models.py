@@ -311,7 +311,8 @@ class DeployableStrategyParameters(models.Model):
             attr != '_abc_impl' and
             attr != '_currency_pair' and
             attr != '_login_cred' and
-            attr != '_timeframe'
+            attr != '_timeframe' and
+            attr != '_lot_size'
         }
         self.currency_pairs = MetaTraderData.currency_pairs
         self.timeframes = MetaTraderData.timeframes

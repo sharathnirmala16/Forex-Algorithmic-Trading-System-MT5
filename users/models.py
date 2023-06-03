@@ -7,6 +7,7 @@ from django.utils.module_loading import import_string
 from .managers import CustomUserManager
 from dotenv import load_dotenv
 from .backtest_strategies import *
+from .deployable_strategies import *
 from .DataClass import *
 from backtesting import Backtest, Strategy
 import os
@@ -253,7 +254,73 @@ class BacktestStrategyOptimization(models.Model):
 
         return params
     
-def backtest_strategy_post_init(sender, instance, **kwargs):
+class DeployableStrategyClasses(models.Model):
+    class Meta:
+        managed = False
+
+    @staticmethod
+    def __get_classes_from_file(file) -> list:
+        current_module = sys.modules[DeployableStrategyClasses.__module__]
+        module_name = current_module.__name__.rsplit('.', 1)[0] + f".{file}"
+        module = import_string(module_name)
+        class_list = [item for item in dir(module) if isinstance(getattr(module, item), type)]
+        return class_list
+    
+    def load_strategy_classes(self) -> None:
+        strategies_list = DeployableStrategyClasses.__get_classes_from_file('deployable_strategies')
+        strategies_list.remove('ABCMeta')
+        strategies_list.remove('AbstractStrategy')
+        strategies_list.remove('ExecutionEngine')
+        strategies_list.remove('MetaTraderData')
+        current_module = sys.modules[DeployableStrategyClasses.__module__]
+        self.strategies_dict = {}
+        for strategy in strategies_list:
+            strategy_class = getattr(current_module, strategy)
+            name = getattr(strategy_class, 'strategy_name')
+            self.strategies_dict[strategy] = name
+
+class DeployableStrategyParameters(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+
+    class Meta:
+        managed = False
+
+    def load_parameters(self, strategy_class : str) -> None:
+        self.strategy_class = strategy_class
+        current_module = sys.modules[DeployableStrategyParameters.__module__]
+        base_class = getattr(current_module, 'AbstractStrategy')
+        base_class_attr = { 
+            attr: getattr(base_class, attr) 
+            for attr in dir(base_class) 
+            if not callable(getattr(base_class, attr)) and 
+            not attr.startswith('__') and
+            not attr.startswith('_') and 
+            attr != 'repeat_time'
+        }
+        
+        self.strategy_class = getattr(current_module, self.strategy_class)
+        self.strategy_params = {
+            attr: getattr(self.strategy_class, attr) 
+            for attr in dir(self.strategy_class)
+            if not callable(getattr(self.strategy_class, attr)) and 
+            not attr.startswith('__') and 
+            attr not in base_class_attr and
+            attr != 'strategy_name' and
+            attr != '_print_error' and
+            attr != '_active_trades' and
+            attr != '_abc_impl' and
+            attr != '_currency_pair' and
+            attr != '_login_cred' and
+            attr != '_timeframe'
+        }
+        self.currency_pairs = MetaTraderData.currency_pairs
+        self.timeframes = MetaTraderData.timeframes
+
+    def deploy_model(self, **kwargs) -> None:
+        pass
+    
+def strategy_post_init(sender, instance, **kwargs):
     instance.load_strategy_classes()
 
-post_init.connect(backtest_strategy_post_init, sender=BacktestStrategyClasses)
+post_init.connect(strategy_post_init, sender=BacktestStrategyClasses)
+post_init.connect(strategy_post_init, sender=DeployableStrategyClasses)

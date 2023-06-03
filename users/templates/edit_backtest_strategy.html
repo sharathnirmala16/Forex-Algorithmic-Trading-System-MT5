@@ -4,7 +4,7 @@
 <html>
     <head>
         <title>Pip Prophet</title>
-        <link rel="icon" type="image/x-icon" href="{% static 'images/globe.png' %}"/>
+        <!-- <link rel="icon" type="image/x-icon" href="{% static 'images/globe.png' %}"/> -->
         <link rel="stylesheet" href="{% static 'stylesheets/backtests.css' %}"/>
     </head>
     <body>
@@ -38,15 +38,28 @@
         </div>
         <div>
             {% block content %}
-            <form id="strategy-select" method="post">
+            <form id="strategy-modify" method="post">
                 {% csrf_token %}
-                <label for="strategy">Select a Strategy</label>
-                {{ bt_strategy_form.as_p }}
-                <input type="submit" value="Edit Strategy Parameters" name = "EditStrategyParameters">
+                <label for="strategy">Modify your Strategy</label>
+                {{ bt_params_form.as_p }}
+                <input type="submit" value="Backtest" name = "Backtest">
+                <input type="submit" value="Optimize" name = "Optimize">
             </form>
-            {% endblock %}
+            <div>
+                <ul>
+                    {% for key, value in results.items %}
+                    <li>{{key}}: {{value}}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div>
+                <form target="_blank" method="post">
+                  {% csrf_token %}
+                  <input type="submit" value="Plot" name = "Plot">
+                </form>
+              </div>
+              {% endblock %}
         </div>
         {% endif %}
-        <script src="{% static 'scripts/backtests.js' %}"></script>
     </body>
 </html>

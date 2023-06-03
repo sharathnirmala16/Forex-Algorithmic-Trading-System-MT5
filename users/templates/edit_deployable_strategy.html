@@ -30,7 +30,7 @@
                     <ul>
                         <li><a href="/dashboard">Dashboard</a></li>
                         <li><a href="/backtests">Backtests</a></li>
-                        <li><a href="/">Deploy an Algorithm</a></li>
+                        <li><a href="/deploy">Deploy</a></li>
                         <li><a href="/logout">Logout</a></li>
                     </ul>
                 </div>
@@ -41,9 +41,8 @@
             <form id="strategy-modify" method="post">
                 {% csrf_token %}
                 <label for="strategy">Modify your Strategy</label>
-                {{ bt_params_form.as_p }}
-                <input type="submit" value="Backtest" name = "Backtest">
-                <input type="submit" value="Optimize" name = "Optimize">
+                {{ dp_params_form.as_p }}
+                <input type="submit" value="Deploy" name = "Deploy">
             </form>
             <div>
                 <ul>
@@ -52,13 +51,7 @@
                     {% endfor %}
                 </ul>
             </div>
-            <div>
-                <form target="_blank" method="post">
-                  {% csrf_token %}
-                  <input type="submit" value="Plot" name = "Plot">
-                </form>
-              </div>
-              {% endblock %}
+            {% endblock %}
         </div>
         {% endif %}
     </body>

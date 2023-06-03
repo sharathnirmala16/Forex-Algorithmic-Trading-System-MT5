@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 import MetaTrader5 as mt
 
-from DataClass import MetaTraderData
-from abc import ABCMeta, abstractmethod, abstractstaticmethod
+from .DataClass import MetaTraderData
+from abc import ABCMeta, abstractmethod
 
 class AbstractStrategy(metaclass = ABCMeta):
     _lot_size : float = None
@@ -16,7 +16,6 @@ class AbstractStrategy(metaclass = ABCMeta):
     _deviation : int = None
     _dataframe_size : int = None
     _print_error : bool = None
-    strategy_name : str = 'Deployable Strategy Abstract Class'
     _active_trades : list = []
 
     def __init__(
@@ -251,6 +250,7 @@ class ExecutionEngine:
             time.sleep(self.__instance.repeat_time)
 
 class BuySellTest(AbstractStrategy):
+    strategy_name = 'Buy and Sell Test Algorithm'
     wait_calls : int = None
     def __init__(
             self, 
@@ -278,10 +278,10 @@ class BuySellTest(AbstractStrategy):
         if len(self._active_trades) == 0:
             if self.long:
                 self.buy()
-                long = False
+                self.long = False
             else:
                 self.sell()
-                long = True
+                self.long = True
         else:
             if self.current_calls < self.wait_calls:
                 self.current_calls += 1

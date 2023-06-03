@@ -175,3 +175,44 @@ class BacktestStrategyOptimizeForm(forms.ModelForm):
     class Meta:
         model = BacktestStrategyOptimization
         fields = []
+
+class DeployableStrategyClassesForm(forms.ModelForm):
+    strategies_combobox = forms.ChoiceField(label='Strategy: ', choices=[], required=False)
+
+    def __init__(self, *args, **kwargs) -> None:
+        strategies_dict : dict = kwargs.pop('strategies_dict')
+        super().__init__(*args, **kwargs)
+        
+        if strategies_dict:
+            self.fields['strategies_combobox'].choices = strategies_dict.items()
+
+    class Meta:
+        model = DeployableStrategyClasses
+        fields = []
+
+class DeployableStrategyParametersForm(forms.ModelForm):
+    currency_pairs_combobox = forms.ChoiceField(label='Currency Pair', choices=[])
+    timeframes_combobox = forms.ChoiceField(label='Timeframe', choices=[])
+    lots_field = forms.CharField(label='Lots', initial=10000)
+    account_choice = forms.ChoiceField(label='Account Choice', choices = [])
+
+    def __init__(self, *args, **kwargs) -> None:
+        strategy_params : dict = kwargs.pop('strategy_params')
+        currency_pairs : dict = kwargs.pop('currency_pairs')
+        timeframes : dict = kwargs.pop('timeframes')
+        super().__init__(*args, **kwargs)
+
+        self.fields['account_choice'].choices = {'Demo':'Demo Account', 'Live':'Live Account'}.items()
+
+        if currency_pairs:
+            self.fields['currency_pairs_combobox'].choices = currency_pairs.items()
+        if timeframes:
+            self.fields['timeframes_combobox'].choices = timeframes.items()
+        for param, value in strategy_params.items():
+            self.fields[param] = forms.CharField(label=param, required=True)
+            self.initial[param] = value
+
+
+    class Meta:
+        model = DeployableStrategyParameters
+        fields = []

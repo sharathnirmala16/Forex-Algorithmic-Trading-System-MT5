@@ -41,12 +41,11 @@
             <form id="strategy-select" method="post">
                 {% csrf_token %}
                 <label for="strategy">Select a Strategy</label>
-                {{ bt_strategy_form.as_p }}
+                {{ dp_strategy_form.as_p }}
                 <input type="submit" value="Edit Strategy Parameters" name = "EditStrategyParameters">
             </form>
             {% endblock %}
         </div>
         {% endif %}
-        <script src="{% static 'scripts/backtests.js' %}"></script>
     </body>
 </html>

@@ -82,13 +82,13 @@ class BacktestStrategyClassesView(LoginRequiredMixin, View):
         )
         if bt_strategy_form.is_valid():
             selected_strategy = bt_strategy_form.cleaned_data['strategies_combobox']
-            return redirect(reverse_lazy('edit_strategy', args=[selected_strategy]))
+            return redirect(reverse_lazy('edit_backtest_strategy', args=[selected_strategy]))
         
         return render(request, self.redirect_to, {'bt_strategy_form':bt_strategy_form})
     
 class StrategyParametersView(LoginRequiredMixin, View):
     login_url = '/login/'
-    redirect_to = 'edit_strategy.html'
+    redirect_to = 'edit_backtest_strategy.html'
 
     def get(self, request : HttpRequest, strategy_class : str, *args, **kwargs) -> HttpResponse:
         bt_params_model = BacktestStrategyParameters(user = request.user)
@@ -197,6 +197,44 @@ class StrategyOptimizationView(LoginRequiredMixin, View):
             bt_optimize_model = BacktestStrategyOptimization(user = request.user)
             res = bt_optimize_model.optimize_strategy(**params_instance)
         return render(request, self.redirect_to, {'bt_optimize_form':bt_optimize_form, 'value_check':res})
+    
+class DeployableStrategySelectView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    redirect_to = 'deploy.html'
+    dp_strategy_model = DeployableStrategyClasses()
+
+    def get(self, request : HttpRequest, *args, **kwargs) -> HttpResponse:
+        dp_strategy_form = DeployableStrategyClassesForm(
+            request.GET,
+            strategies_dict = self.dp_strategy_model.strategies_dict
+        )
+        return render(request, self.redirect_to, {'dp_strategy_form':dp_strategy_form})
+    
+    def post(self, request : HttpRequest, *args, **kwargs) -> HttpResponse:
+        dp_strategy_form = BacktestStrategyClassesForm(
+            request.POST, 
+            strategies_dict = self.dp_strategy_model.strategies_dict
+        )
+        if dp_strategy_form.is_valid():
+            selected_strategy = dp_strategy_form.cleaned_data['strategies_combobox']
+            return redirect(reverse_lazy('edit_deployable_strategy', args=[selected_strategy]))
+        
+        return render(request, self.redirect_to, {'dp_strategy_form':dp_strategy_form})
+    
+class DeployableStrategyParametersView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    redirect_to = 'edit_deployable_strategy.html'
+
+    def get(self, request : HttpRequest, strategy_class : AbstractStrategy, *args, **kwargs) -> HttpResponse:
+        dp_params_model = DeployableStrategyParameters(user = request.user)
+        dp_params_model.load_parameters(strategy_class)
+        dp_params_form = DeployableStrategyParametersForm(
+            request.GET,
+            strategy_params = dp_params_model.strategy_params,
+            currency_pairs = dp_params_model.currency_pairs,
+            timeframes = dp_params_model.timeframes
+        )
+        return render(request, self.redirect_to, {'dp_params_form':dp_params_form})
     
 class LogoutView(View):
     def get(self, request : HttpRequest, *args, **kwargs) -> HttpResponse:

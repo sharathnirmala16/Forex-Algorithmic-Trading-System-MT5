@@ -328,3 +328,63 @@ class RSIStrategy(AbstractStrategy):
             elif self._data['rsi'][-1] <= 30 and self._data['ma'][-1] >= price:
                 self.buy(sl = price - (self.sl_bar * self.bar_gap), tp = price + (self.tp_bar * self.bar_gap))
         
+class StaticGridStrategy(AbstractStrategy):
+    strategy_name = 'Static Grid Strategy'
+    line_count = 8
+    grid_gap = 0.005
+
+    def init(self) -> None:
+        self.__restart_grid = True
+        self.__size = self._lot_size // self.line_count
+
+    def apply_indicators(self) -> None:
+        pass
+
+    def next(self) -> None:
+        price = self._data['Close'][-1]
+        
+        if self.__restart_grid:
+            self.grid_lines = list()
+            for i in range(self.line_count, 0, -1):
+                self.grid_lines.append(price - (i * self.grid_gap))
+
+            for i in range(0, self.line_count + 1):
+                self.grid_lines.append(price + (i * self.grid_gap))
+
+            if len(self.grid_lines) != (2 * self.line_count) + 1:
+                raise Exception("Grid Lines not placed properly")
+            
+            self.grid_dict = dict.fromkeys(tuple(self.grid_lines), False) 
+            self.__restart_grid = False
+            
+        elif not self.__restart_grid:
+            for i in range(self.line_count + 1, len(self.grid_lines) - 1):
+                if (
+                        price >= self.grid_lines[i] and 
+                        price < self.grid_lines[i + 1] and
+                        not self.grid_dict[self.grid_lines[i]]
+                ):
+                    self.sell(
+                        size = self.__size,
+                        sl = self.grid_lines[-1], 
+                        tp = self.grid_lines[self.line_count]
+                    )
+                    self.grid_dict[self.grid_lines[i]] = True
+                    break
+
+            for i in range(self.line_count - 1, 0, -1):
+                if (
+                        price <= self.grid_lines[i] and 
+                        price > self.grid_lines[i - 1] and
+                        not self.grid_dict[self.grid_lines[i]]
+                ):
+                    self.buy(
+                        size = self.__size,
+                        sl = self.grid_lines[0], 
+                        tp = self.grid_lines[self.line_count]
+                    )
+                    self.grid_dict[self.grid_lines[i]] = True
+                    break
+
+            if price < self.grid_lines[0] or price > self.grid_lines[-1]:
+                self.__restart_grid = True

@@ -34,7 +34,6 @@ class HomeView(TemplateView):
         form = CustomUserLoginForm()
         return render(request, self.template_name, {'form': form})
 
-
 class LoginView(View):
     template_name = 'login.html'
 
@@ -225,7 +224,7 @@ class DeployableStrategyParametersView(LoginRequiredMixin, View):
     login_url = '/login/'
     redirect_to = 'edit_deployable_strategy.html'
 
-    def get(self, request : HttpRequest, strategy_class : AbstractStrategy, *args, **kwargs) -> HttpResponse:
+    def get(self, request : HttpRequest, strategy_class : str, *args, **kwargs) -> HttpResponse:
         dp_params_model = DeployableStrategyParameters(user = request.user)
         dp_params_model.load_parameters(strategy_class)
         dp_params_form = DeployableStrategyParametersForm(
@@ -234,6 +233,21 @@ class DeployableStrategyParametersView(LoginRequiredMixin, View):
             currency_pairs = dp_params_model.currency_pairs,
             timeframes = dp_params_model.timeframes
         )
+        return render(request, self.redirect_to, {'dp_params_form':dp_params_form})
+    
+    def post(self, request : HttpRequest, strategy_class : str, *args, **kwargs) -> HttpResponse:
+        dp_params_model = DeployableStrategyParameters(user = request.user)
+        dp_params_model.load_parameters(strategy_class)
+        dp_params_form = DeployableStrategyParametersForm(
+            request.POST,
+            strategy_params = dp_params_model.strategy_params,
+            currency_pairs = dp_params_model.currency_pairs,
+            timeframes = dp_params_model.timeframes
+        )
+        if dp_params_form.is_valid():
+            params_dict = dp_params_form.cleaned_data
+            params_dict['strategy_class'] = strategy_class
+            dp_params_model.deploy_model(**params_dict)
         return render(request, self.redirect_to, {'dp_params_form':dp_params_form})
     
 class LogoutView(View):

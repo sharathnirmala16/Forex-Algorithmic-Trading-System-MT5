@@ -317,8 +317,33 @@ class DeployableStrategyParameters(models.Model):
         self.currency_pairs = MetaTraderData.currency_pairs
         self.timeframes = MetaTraderData.timeframes
 
+    def __return_creds(self, live : bool) -> dict:
+        if live:
+            return { 'login':self.user.live_login, 'password':self.user.get_live_password(), 'server':self.user.live_server }
+        else:
+            return { 'login':self.user.demo_login, 'password':self.user.get_demo_password(), 'server':self.user.demo_server }
+
     def deploy_model(self, **kwargs) -> None:
-        pass
+        for key in kwargs:
+            if kwargs[key].isnumeric():
+                kwargs[key] = int(kwargs[key])
+            elif kwargs[key].find('.') >= 0:
+                kwargs[key] = float(kwargs[key])
+
+        algo = ExecutionEngine(
+            strategy_class=globals()[kwargs.pop('strategy_class')],
+            lot_size=kwargs.pop('lots_field'),
+            login_cred=self.__return_creds(True if kwargs.pop('account_choice') is 'Live' else False),
+            currency_pair=kwargs.pop('currency_pairs_combobox'),
+            timeframe=kwargs.pop('timeframes_combobox'),
+            repeat_time=kwargs.pop('repeat_time'),
+            dataframe_size=kwargs.pop('_dataframe_size'),
+            deviation=kwargs.pop('_deviation'),
+            print_error=True,
+            **kwargs
+        )
+        algo.execute()
+        
     
 def strategy_post_init(sender, instance, **kwargs):
     instance.load_strategy_classes()

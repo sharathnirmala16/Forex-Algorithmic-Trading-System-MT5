@@ -8,6 +8,7 @@
         <link rel="stylesheet" href="{% static 'stylesheets/backtests.css' %}"/>
     </head>
     <body>
+<<<<<<< Updated upstream
         <!--<div>
             {% for message in messages %}
             <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
@@ -32,16 +33,35 @@
                         <li><a href="/">Deployed Algorithms</a></li>
                         <li><a href="/logout">Logout</a></li>
                     </ul>
+=======
+
+        <header class="navbar">
+            <h1>Backtesting Strategies</h1>
+            <div>
+                <div class="dropdown">
+                    <button id="dropbtn">Options
+                        <i class="fa fa-caret-down"></i>
+                    </button>
+                    <div class="dropdown-content">
+                            <a href="/dashboard">Dashboard</a>
+                            <a href="/backtests">Backtests</a>
+                            <a href="/">Deployed Algorithms</a>
+                            <a href="/logout">Logout</a>
+                    </div>
+>>>>>>> Stashed changes
                 </div>
             </div>
-        </div>
-        <div>
+        </header>
+       
+        {% csrf_token %}
+        {% if user.is_authenticated %}
+        <div class="container">
             {% block content %}
             <form id="strategy-select" method="post">
                 {% csrf_token %}
-                <label for="strategy">Select a Strategy</label>
+                <label for="strategy"><h2>Select a Strategy</h2></label>
                 {{ bt_strategy_form.as_p }}
-                <input type="submit" value="Edit Strategy Parameters" name = "EditStrategyParameters">
+                <input type="submit" value="Edit Strategy Parameters" name="EditStrategyParameters">
             </form>
             {% endblock %}
         </div>

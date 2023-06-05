@@ -7,10 +7,12 @@ from django.utils.module_loading import import_string
 from .managers import CustomUserManager
 from dotenv import load_dotenv
 from .backtest_strategies import *
+from .deployable_strategies import *
 from .DataClass import *
 from backtesting import Backtest, Strategy
 import os
 import sys
+import inspect
 import cryptocode
 load_dotenv()
 
@@ -103,6 +105,9 @@ class BacktestStrategyClasses(models.Model):
 class BacktestStrategyParameters(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
 
+    class Meta:
+        managed = False
+
     def load_parameters(self, strategy_class : str) -> None:
         self.strategy_class = strategy_class
         current_module = sys.modules[BacktestStrategyParameters.__module__]
@@ -128,12 +133,220 @@ class BacktestStrategyParameters(models.Model):
         self.currency_pairs = MetaTraderData.currency_pairs
         self.timeframes = MetaTraderData.timeframes
 
-    def perform_backtest(
-        self) -> dict:
-        login_cred = { 'login':self.user.demo_login, 'password':self.user.get_demo_password(), 'server':self.user.demo_server }
-        #NOTE Perform backtest and send results
+    def store_backtest_params(self, strategy_class : str, currency_pair : str, timeframe : int,
+        cash : float, commission : float, margin : float, trade_on_close: bool,
+        hedging : bool, exclusive_orders : bool):
+        self.strategy_class = strategy_class
+        self.currency_pair = currency_pair
+        self.timeframe = timeframe
+        self.cash = cash
+        self.commission = commission
+        self.margin = margin
+        self.trade_on_close = trade_on_close
+        self.hedging = hedging
+        self.exclusive_orders = exclusive_orders
+
+        self.login_cred = { 'login':self.user.demo_login, 'password':self.user.get_demo_password(), 'server':self.user.demo_server }
+        self.strategy_obj = globals()[self.strategy_class]
+
+
+    def perform_backtest(self, **kwargs) -> dict:
+        #initializing data object
+        data_instance = MetaTraderData(self.login_cred, self.currency_pair)
+        data = data_instance.get_data(50000, int(self.timeframe))
+        
+        #creating a backtesting class object
+        bt = Backtest(
+            data=data, 
+            strategy=self.strategy_obj, 
+            cash=self.cash, 
+            commission=self.commission, 
+            margin=self.margin, 
+            trade_on_close=self.trade_on_close, 
+            hedging=self.hedging, 
+            exclusive_orders=self.exclusive_orders
+        )
+
+        #performing backtest and storing results
+        results = dict(bt.run(**kwargs))
+        results.pop('_strategy')
+        results.pop('_equity_curve')
+        results.pop('_trades')
+
+        #creating the plot
+        cwd = os.getcwd()
+        file_name = 'users\\templates\\html_files\\plot.html'
+        file_path = os.path.join(cwd, file_name)
+        bt.plot(resample=False, open_browser = False, filename=file_path)
+
+        return results
     
-def backtest_strategy_post_init(sender, instance, **kwargs):
+class BacktestStrategyOptimization(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+
+    class Meta:
+        managed = False
+
+    def optimize_strategy(self, **kwargs) -> dict:
+        login_cred = { 'login':self.user.demo_login, 'password':self.user.get_demo_password(), 'server':self.user.demo_server }
+        strategy_class = kwargs.pop('strategy_class')
+        strategy_obj = globals()[strategy_class]
+
+        #initializing data object
+        data_instance = MetaTraderData(login_cred, kwargs.pop('currency_pair'))
+        data = data_instance.get_data(50000, int(kwargs.pop('timeframe')))
+
+        #creating a backtesting class object
+        bt = Backtest(
+            data=data, 
+            strategy=strategy_obj, 
+            cash=kwargs.pop('cash'), 
+            commission=kwargs.pop('commission'), 
+            margin=kwargs.pop('margin'), 
+            trade_on_close=kwargs.pop('trade_on_close'), 
+            hedging=kwargs.pop('hedging'), 
+            exclusive_orders=kwargs.pop('exclusive_orders')
+        )
+
+        current_module = sys.modules[BacktestStrategyParameters.__module__]
+
+        base_class = getattr(current_module, 'Strategy')
+        base_class_attr = { 
+            attr: getattr(base_class, attr) 
+            for attr in dir(base_class) 
+            if not callable(getattr(base_class, attr)) and 
+            not attr.startswith('__') and 
+            not attr.startswith('_')
+        }
+
+        strategy_params = {
+            attr: getattr(strategy_class, attr) 
+            for attr in dir(strategy_class)
+            if not callable(getattr(strategy_class, attr)) and 
+            not attr.startswith('__') and 
+            not attr.startswith('_') and
+            attr not in base_class_attr and
+            attr != 'strategy_name'
+        }
+
+        for key in strategy_params.keys():
+            if type(kwargs[key][0]) == float:
+                kwargs[key] = np.arange(range(kwargs[key][0], kwargs[key][1], kwargs[key][2])).tolist()
+            else:
+                kwargs[key] = list(range(kwargs[key][0], kwargs[key][1], kwargs[key][2]))
+
+        constraint = None
+        try:
+            constraint = eval(kwargs.pop('constraint_function_field'))
+        except:
+            constraint = None
+
+        res = bt.optimize(
+            method=kwargs.pop('technique_combobox'),
+            maximize=kwargs.pop('maximize_combobox'),
+            constraint=constraint,
+            **kwargs
+        )['_strategy']
+        params = {
+            param: value 
+            for param, value in vars(res).items()
+        }['_params']
+
+        return params
+    
+class DeployableStrategyClasses(models.Model):
+    class Meta:
+        managed = False
+
+    @staticmethod
+    def __get_classes_from_file(file) -> list:
+        current_module = sys.modules[DeployableStrategyClasses.__module__]
+        module_name = current_module.__name__.rsplit('.', 1)[0] + f".{file}"
+        module = import_string(module_name)
+        class_list = [item for item in dir(module) if isinstance(getattr(module, item), type)]
+        return class_list
+    
+    def load_strategy_classes(self) -> None:
+        strategies_list = DeployableStrategyClasses.__get_classes_from_file('deployable_strategies')
+        strategies_list.remove('ABCMeta')
+        strategies_list.remove('AbstractStrategy')
+        strategies_list.remove('ExecutionEngine')
+        strategies_list.remove('MetaTraderData')
+        current_module = sys.modules[DeployableStrategyClasses.__module__]
+        self.strategies_dict = {}
+        for strategy in strategies_list:
+            strategy_class = getattr(current_module, strategy)
+            name = getattr(strategy_class, 'strategy_name')
+            self.strategies_dict[strategy] = name
+
+class DeployableStrategyParameters(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+
+    class Meta:
+        managed = False
+
+    def load_parameters(self, strategy_class : str) -> None:
+        self.strategy_class = strategy_class
+        current_module = sys.modules[DeployableStrategyParameters.__module__]
+        base_class = getattr(current_module, 'AbstractStrategy')
+        base_class_attr = { 
+            attr: getattr(base_class, attr) 
+            for attr in dir(base_class) 
+            if not callable(getattr(base_class, attr)) and 
+            not attr.startswith('__') and
+            not attr.startswith('_') and 
+            attr != 'repeat_time'
+        }
+        
+        self.strategy_class = getattr(current_module, self.strategy_class)
+        self.strategy_params = {
+            attr: getattr(self.strategy_class, attr) 
+            for attr in dir(self.strategy_class)
+            if not callable(getattr(self.strategy_class, attr)) and 
+            not attr.startswith('__') and 
+            attr not in base_class_attr and
+            attr != 'strategy_name' and
+            attr != '_print_error' and
+            attr != '_active_trades' and
+            attr != '_abc_impl' and
+            attr != '_currency_pair' and
+            attr != '_login_cred' and
+            attr != '_timeframe' and
+            attr != '_lot_size'
+        }
+        self.currency_pairs = MetaTraderData.currency_pairs
+        self.timeframes = MetaTraderData.timeframes
+
+    def __return_creds(self, live : bool) -> dict:
+        if live:
+            return { 'login':self.user.live_login, 'password':self.user.get_live_password(), 'server':self.user.live_server }
+        else:
+            return { 'login':self.user.demo_login, 'password':self.user.get_demo_password(), 'server':self.user.demo_server }
+
+    def deploy_model(self, **kwargs) -> None:
+        for key in kwargs:
+            if kwargs[key].isnumeric():
+                kwargs[key] = int(kwargs[key])
+            elif kwargs[key].find('.') >= 0:
+                kwargs[key] = float(kwargs[key])
+
+        algo = ExecutionEngine(
+            strategy_class=globals()[kwargs.pop('strategy_class')],
+            lot_size=kwargs.pop('lots_field'),
+            login_cred=self.__return_creds(True if kwargs.pop('account_choice') is 'Live' else False),
+            currency_pair=kwargs.pop('currency_pairs_combobox'),
+            timeframe=kwargs.pop('timeframes_combobox'),
+            repeat_time=kwargs.pop('repeat_time'),
+            dataframe_size=kwargs.pop('_dataframe_size'),
+            deviation=kwargs.pop('_deviation'),
+            print_error=True,
+            **kwargs
+        )
+        algo.execute()
+        
+    
+def strategy_post_init(sender, instance, **kwargs):
     instance.load_strategy_classes()
 
-post_init.connect(backtest_strategy_post_init, sender=BacktestStrategyClasses)
+post_init.connect(strategy_post_init, sender=BacktestStrategyClasses)
+post_init.connect(strategy_post_init, sender=DeployableStrategyClasses)

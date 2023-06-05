@@ -2,6 +2,7 @@ import socket
 import numpy as np
 import pandas as pd
 import MetaTrader5 as mt
+from typing import Union
 from datetime import datetime
 
 class MetaTraderData:
@@ -55,8 +56,9 @@ class MetaTraderData:
                     self.__symbol = symbol
                 else:
                     raise Exception('Invalid Symbol.')
-                mt.login(login_cred['login'], login_cred['password'], login_cred['server'])
-
+                login_ok = mt.login(login_cred['login'], login_cred['password'], login_cred['server'])
+                if not login_ok:
+                    raise Exception('Failed to connect to account.')
                 if print_acc_info:
                     print(mt.account_info())
             else:
@@ -64,6 +66,7 @@ class MetaTraderData:
         except Exception as e:
             if print_error:
                 print(e)
+                print(mt.last_error())
 
     #checks for internet connection
     @staticmethod
@@ -78,8 +81,7 @@ class MetaTraderData:
     def get_historical_data(self, utc_from : datetime, 
                  utc_to : datetime, timeframe = mt.TIMEFRAME_D1,
                  timezone = 'Asia/Kolkata', print_error = False,
-                 upper_case_cols = True) -> pd.DataFrame:
-        data = pd.DataFrame()
+                 upper_case_cols = True) -> Union[pd.DataFrame, None]:
         try:
             if MetaTraderData.internet_connection():
                 mt.initialize()
@@ -95,19 +97,22 @@ class MetaTraderData:
             if data.empty:
                 raise Exception('Invalid parameters passed, unable to obtain data.')
             
+            if upper_case_cols:
+                data = data.rename(columns = {'datetime':'Date', 'open':'Open', 'high':'High', 'low':'Low', 'close':'Close'})
+
+            return data
+        
         except Exception as e:
             if print_error:
                 print(e)
-
-        if upper_case_cols:
-            data = data.rename(columns = {'datetime':'Date', 'open':'Open', 'high':'High', 'low':'Low', 'close':'Close'})
-        return data
+                print(mt.last_error())
+            else:
+                return None
     
     #get recent data
     def get_data(self, count : int, timeframe = mt.TIMEFRAME_D1,
                  timezone = 'Asia/Kolkata', print_error = False, 
-                 upper_case_cols = True) -> pd.DataFrame:
-        data = pd.DataFrame()
+                 upper_case_cols = True, datetime_index = True) -> Union[pd.DataFrame, None]:
         try:
             if MetaTraderData.internet_connection():
                 mt.initialize()
@@ -123,13 +128,21 @@ class MetaTraderData:
             if data.empty:
                 raise Exception('Invalid parameters passed, unable to obtain data.')
             
+            if upper_case_cols:
+                data = data.rename(columns = {'datetime':'Date', 'open':'Open', 'high':'High', 'low':'Low', 'close':'Close'})
+                if datetime_index:
+                    data = data.set_index('Date')
+            elif datetime_index:
+                data = data.set_index('datetime')
+
+            return data
+        
         except Exception as e:
             if print_error:
                 print(e)
-
-        if upper_case_cols:
-            data = data.rename(columns = {'datetime':'Date', 'open':'Open', 'high':'High', 'low':'Low', 'close':'Close'})
-        return data
+                print(mt.last_error())
+            else:
+                return None
     
     #get bid price—highest price buyer is willing to buy for
     def get_bid(self, print_error = False) -> float:
@@ -141,6 +154,7 @@ class MetaTraderData:
         except Exception as e:
             if print_error:
                 print(e)
+                print(mt.last_error())
         return -1
 
     #get ask price—lowest price seller is willing to sell for
@@ -153,6 +167,7 @@ class MetaTraderData:
         except Exception as e:
             if print_error:
                 print(e)
+                print(mt.last_error())
         return -1
         
     #getter and setter methods

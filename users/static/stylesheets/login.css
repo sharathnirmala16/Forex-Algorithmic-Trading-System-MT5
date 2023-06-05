@@ -1,5 +1,7 @@
 body {
-    background-color: #f2f2f2;
+    /* background-color: #f2f2f2; */
+    background-color: #37517e;
+
     font-family: Arial, sans-serif;
 }
 .container {
@@ -18,6 +20,7 @@ h1, h2 {
 form {
     display: flex;
     flex-direction: column;
+    
 }
 input[type="text"], input[type="password"], input[type="email"] {
     padding: 10px;
@@ -73,4 +76,10 @@ button[type="submit"]:hover {
     background-color: #f8d7da;
     color: #721c24;
     border: 1px solid #f5c6cb;
+}
+
+label{
+    display: inline-block;
+    width: 150px;
+    text-align: right;
 }

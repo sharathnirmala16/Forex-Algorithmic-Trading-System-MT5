@@ -132,14 +132,3 @@ input, select{
     margin-top: 10px;
 
 }
-
-
-.backtest_result{
-  text-align: center;
-  color: whitesmoke;
-  margin-top: 20px;
-}
-
-ul{
-  list-style: none;
-}

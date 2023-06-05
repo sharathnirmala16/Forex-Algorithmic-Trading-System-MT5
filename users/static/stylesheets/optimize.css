@@ -6,6 +6,7 @@ body{
   p{
     color: whitesmoke;
     font-family: Helvetica, sans-serif;
+    vertical-align: middle;
   }
   
   h1{
@@ -97,49 +98,39 @@ body{
 
 
 form{
-  /* margin-left: 590px; */
-  text-align: center;
-}
-
-label{
-    font-family:  Helvetica, sans-serif;
-    font-weight: bold;
-    display: inline-block;
-    width: 150px;
-    text-align: right;
-}
-
-
-input, select{
-    background: none repeat scroll 0 0 #FFFFFF;
-      border: 1px solid #E5E5E5;
-      border-radius: 5px 5px 5px 5px;
-      box-shadow: 0 0 10px #E8E8E8 inset;
-      height: 40px;
-      margin: 10px 0 0 10px;
-      padding: 0px;
-      width: 190px;
-      font-family: Helvetica, sans-serif;
-      text-align: center;
+    /* margin-left: 590px; */
+    text-align: center;
   }
+  
+  label{
+      font-family:  Helvetica, sans-serif;
+      font-weight: bold;
+      display: inline-block;
+      width: 250px;
+      text-align: right;
+  }
+  
+  
+  input, select{
+      background: none repeat scroll 0 0 #FFFFFF;
+        border: 1px solid #E5E5E5;
+        border-radius: 5px 5px 5px 5px;
+        box-shadow: 0 0 10px #E8E8E8 inset;
+        height: 40px;
+        margin: 10px 0 0 10px;
+        padding: 0px;
+        width: 190px;
+        font-family: Helvetica, sans-serif;
+        text-align: center;
+    }
 
 
-  #id_trade_on_close_field, #id_hedging_field, #id_exclusive_orders_field {
-
-    /* margin-top: 10px */
-    width: 40px;
-    border-radius: 5px 5px 5px 5px;
-    margin-top: 10px;
-
-}
-
-
-.backtest_result{
-  text-align: center;
-  color: whitesmoke;
-  margin-top: 20px;
-}
-
-ul{
-  list-style: none;
-}
+    .optimize_result{
+      text-align: center;
+      color: whitesmoke;
+      margin-top: 20px;
+    }
+    
+    ul{
+      list-style: none;
+    }

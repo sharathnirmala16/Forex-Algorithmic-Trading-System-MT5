@@ -3,8 +3,6 @@ body{
 
 }
 
-
-
 p{
   color: #8f8f8f;
 }
@@ -13,6 +11,10 @@ h1{
   color: #37517e;
   font-size: 60px;
   font-family: Arial, Helvetica, sans-serif;
+  text-align: center;
+}
+
+.container{
   text-align: center;
 }
 
@@ -95,4 +97,30 @@ h3{
 
 .dropdown-options a:hover {
   background-color: #f2f2f2;
+}
+
+
+
+#id_strategies_combobox {
+  background: none repeat scroll 0 0 #FFFFFF;
+    border: 1px solid #E5E5E5;
+    border-radius: 5px 5px 5px 5px;
+    box-shadow: 0 0 10px #E8E8E8 inset;
+    height: 40px;
+    margin: 0 0 0 25px;
+    padding: 10px;
+    width: 300px;
+    font-family: Helvetica, sans-serif;
+}
+
+input{
+  background: none repeat scroll 0 0 #FFFFFF;
+    border: 1px solid #E5E5E5;
+    border-radius: 5px 5px 5px 5px;
+    box-shadow: 0 0 10px #E8E8E8 inset;
+    height: 40px;
+    margin: 0 0 0 25px;
+    padding: 10px;
+    width: 250px;
+    font-family: Helvetica, sans-serif;
 }

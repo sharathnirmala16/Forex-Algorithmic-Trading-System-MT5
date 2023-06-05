@@ -97,7 +97,7 @@ class CustomUserLoginForm(forms.Form):
         return cleaned_data
     
 class BacktestStrategyClassesForm(forms.ModelForm):
-    strategies_combobox = forms.ChoiceField(label='Strategy: ', choices=[], required=False)
+    strategies_combobox = forms.ChoiceField(label='', choices=[], required=False)
 
     def __init__(self, *args, **kwargs) -> None:
         strategies_dict : dict = kwargs.pop('strategies_dict')
@@ -177,7 +177,7 @@ class BacktestStrategyOptimizeForm(forms.ModelForm):
         fields = []
 
 class DeployableStrategyClassesForm(forms.ModelForm):
-    strategies_combobox = forms.ChoiceField(label='Strategy: ', choices=[], required=False)
+    strategies_combobox = forms.ChoiceField(label='', choices=[], required=False)
 
     def __init__(self, *args, **kwargs) -> None:
         strategies_dict : dict = kwargs.pop('strategies_dict')

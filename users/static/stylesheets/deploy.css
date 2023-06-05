@@ -3,9 +3,10 @@ body{
   
   }
   
+  
+  
   p{
-    color: whitesmoke;
-    font-family: Helvetica, sans-serif;
+    color: #8f8f8f;
   }
   
   h1{
@@ -14,19 +15,6 @@ body{
     font-family: Arial, Helvetica, sans-serif;
     text-align: center;
   }
-
-  h2{
-    font-family:  Helvetica, sans-serif;
-    font-weight: bolder;
-    padding-bottom: 25px;
-    font-size: 40px;
-    color: whitesmoke;
-  }
-
-  h4{
-    color: whitesmoke;
-  }
-
   
   .container{
     text-align: center;
@@ -34,7 +22,7 @@ body{
   
   .container-fluid{
   
-    padding: 3% 15% 3%;
+    padding: 3% 15% 7%;
   }
   
   
@@ -56,11 +44,36 @@ body{
     font-family: "Montserrat";
     font-weight: 300;
   }
-
-
-/* dropdown */
-
-
+  
+  
+  body{
+    font-family:"Montserrat";
+  }
+  
+  h1,h2,h3,h4,h5,h6{
+    font-family: 'Montserrat', sans-serif;
+    /* font-weight: bold; */
+  
+  }
+  
+  h4{
+     color: #ffffff;
+  }
+  
+  h2{
+      font-size: 2.5rem;
+      line-height: 1.5;
+      color: #fff;
+  }
+  
+  
+  h3{
+    font-weight: bold;
+  }
+  
+  
+  /* dropdown */
+  
   .dropdown {
     position: relative;
     display: inline-block;
@@ -87,48 +100,33 @@ body{
   .dropdown-options a:hover {
     background-color: #f2f2f2;
   }
-
-
-/* error-list */
-
-.errorlist{
-    display: none;
-}
-
-
-form{
-  /* margin-left: 590px; */
-  text-align: center;
-}
-
-label{
-    font-family:  Helvetica, sans-serif;
-    font-weight: bold;
-    display: inline-block;
-    width: 150px;
-    text-align: right;
-}
-
-
-input, select{
+  
+  
+  
+  #id_strategies_combobox {
     background: none repeat scroll 0 0 #FFFFFF;
       border: 1px solid #E5E5E5;
       border-radius: 5px 5px 5px 5px;
       box-shadow: 0 0 10px #E8E8E8 inset;
       height: 40px;
-      margin: 10px 0 0 10px;
-      padding: 0px;
-      width: 190px;
+      margin: 0 0 0 25px;
+      padding: 10px;
+      width: 250px;
       font-family: Helvetica, sans-serif;
-      text-align: center;
+  }
+  
+  input{
+    background: none repeat scroll 0 0 #FFFFFF;
+      border: 1px solid #E5E5E5;
+      border-radius: 5px 5px 5px 5px;
+      box-shadow: 0 0 10px #E8E8E8 inset;
+      height: 40px;
+      margin: 0 0 0 25px;
+      padding: 10px;
+      width: 250px;
+      font-family: Helvetica, sans-serif;
   }
 
-
-  #id_trade_on_close_field, #id_hedging_field, #id_exclusive_orders_field {
-
-    /* margin-top: 10px */
-    width: 40px;
-    border-radius: 5px 5px 5px 5px;
-    margin-top: 10px;
-
-}
+  #strategy-select{
+    text-align: center;
+  }

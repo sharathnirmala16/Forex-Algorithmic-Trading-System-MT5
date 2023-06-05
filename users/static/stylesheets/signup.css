@@ -1,6 +1,6 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #f0f4f8;
+    background-color: whitesmoke;;
     color: #333;
     margin: 0;
     padding: 0;
@@ -53,6 +53,7 @@ form {
     border: 1px solid #1a73e8;
     border-radius: 5px;
     padding: 20px;
+    /* color: #37517e; */
 }
 
 label {

@@ -224,10 +224,10 @@
             </div>
             {% endfor %}
         </div>
-        <div>
+        <div class="home_url">
             {% csrf_token %}
             {% if user.is_authenticated %}
-            <a href="{% url 'dashboard' %}">Go back to Dashboard</a>
+            <a id="home_dashboard" href="{% url 'dashboard' %}">Go back to Dashboard</a>
             {% else %}
             <button type="submit"> <a href="/login"> Log In </a></button>
             <button type="submit"> <a href="/signup"> Sign Up </a></button>

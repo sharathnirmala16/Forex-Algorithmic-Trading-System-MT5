@@ -38,7 +38,6 @@
                 </div>
             </div>
         </div>
-<<<<<<< Updated upstream
         <div>
             {% block content %}
             <form id="strategy-modify" method="post">
@@ -55,33 +54,6 @@
                 </ul>
             </div>
             {% endblock %}
-=======
-        <div class="container">
-            <div class="container_form">
-                {% block content %}
-                <form id="strategy-modify" method="post">
-                    {% csrf_token %}
-                    <label for="strategy">Modify your Strategy</label>
-                    {{ bt_params_form.as_p }}
-                    <input type="submit" value="Backtest" name="Backtest">
-                    <input type="submit" value="Optimize" name="Optimize">
-                </form>
-                <div>
-                    <ul>
-                        {% for key, value in results.items %}
-                        <li>{{key}}: {{value}}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                <div>
-                    <form target="_blank" method="post">
-                        {% csrf_token %}
-                        <input type="submit" value="Plot" name="Plot">
-                    </form>
-                </div>
-                {% endblock %}
-            </div>
->>>>>>> Stashed changes
         </div>
         {% endif %}
     </body>

@@ -167,7 +167,7 @@ class AbstractStrategy(metaclass = ABCMeta):
             )
         else:
             order_request = self._new_order(
-                buy=False,
+                buy=True,
                 price=price,
                 position=position,
                 order_size=order_size,
@@ -249,7 +249,7 @@ class ExecutionEngine:
             self.__instance.next()
             time.sleep(self.__instance.repeat_time)
 
-class BuySellTest(AbstractStrategy):
+class BuySellTestDeployable(AbstractStrategy):
     strategy_name = 'Buy and Sell Test Algorithm'
     wait_calls : int = None
     def __init__(
@@ -290,7 +290,7 @@ class BuySellTest(AbstractStrategy):
                 self.close(self._active_trades[0]['ticket'])
 
 
-class RSIStrategy(AbstractStrategy):
+class RSIStrategyDeployable(AbstractStrategy):
     strategy_name = 'Simple RSI Strategy'
     rsi_period = 14
     ma_period = 50
@@ -328,7 +328,7 @@ class RSIStrategy(AbstractStrategy):
             elif self._data['rsi'][-1] <= 30 and self._data['ma'][-1] >= price:
                 self.buy(sl = price - (self.sl_bar * self.bar_gap), tp = price + (self.tp_bar * self.bar_gap))
         
-class StaticGridStrategy(AbstractStrategy):
+class StaticGridStrategyDeployable(AbstractStrategy):
     strategy_name = 'Static Grid Strategy'
     line_count = 8
     grid_gap = 0.005

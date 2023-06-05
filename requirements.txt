@@ -1,4 +1,4 @@
-numpy==1.24.2
+numpy==1.23.5
 pandas==1.5.2
 MetaTrader5==5.0.44
 backtesting==0.3.3
@@ -14,3 +14,5 @@ cryptocode==0.1
 pycryptodomex==3.17
 python-dotenv==1.0.0
 tensorflow==2.10.1
+scikit-optimize==0.9.0
+tqdm==4.65.0

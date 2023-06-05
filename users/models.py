@@ -119,7 +119,7 @@ class BacktestStrategyParameters(models.Model):
             not attr.startswith('__') and 
             not attr.startswith('_')
         }
-
+        
         self.strategy_class = getattr(current_module, self.strategy_class)
         self.strategy_params = {
             attr: getattr(self.strategy_class, attr) 
@@ -156,6 +156,7 @@ class BacktestStrategyParameters(models.Model):
         data = data_instance.get_data(50000, int(self.timeframe))
         
         #creating a backtesting class object
+        print(kwargs)
         bt = Backtest(
             data=data, 
             strategy=self.strategy_obj, 
@@ -333,7 +334,7 @@ class DeployableStrategyParameters(models.Model):
         algo = ExecutionEngine(
             strategy_class=globals()[kwargs.pop('strategy_class')],
             lot_size=kwargs.pop('lots_field'),
-            login_cred=self.__return_creds(True if kwargs.pop('account_choice') is 'Live' else False),
+            login_cred=self.__return_creds(True if kwargs.pop('account_choice') == 'Live' else False),
             currency_pair=kwargs.pop('currency_pairs_combobox'),
             timeframe=kwargs.pop('timeframes_combobox'),
             repeat_time=kwargs.pop('repeat_time'),

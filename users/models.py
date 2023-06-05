@@ -95,6 +95,7 @@ class BacktestStrategyClasses(models.Model):
     def load_strategy_classes(self) -> None:
         strategies_list = BacktestStrategyClasses.__get_classes_from_file('backtest_strategies')
         strategies_list.remove('Strategy')
+        strategies_list.remove('MinMaxScaler')
         current_module = sys.modules[BacktestStrategyClasses.__module__]
         self.strategies_dict = {}
         for strategy in strategies_list:
@@ -119,7 +120,7 @@ class BacktestStrategyParameters(models.Model):
             not attr.startswith('__') and 
             not attr.startswith('_')
         }
-
+        
         self.strategy_class = getattr(current_module, self.strategy_class)
         self.strategy_params = {
             attr: getattr(self.strategy_class, attr) 
@@ -272,6 +273,7 @@ class DeployableStrategyClasses(models.Model):
         strategies_list.remove('AbstractStrategy')
         strategies_list.remove('ExecutionEngine')
         strategies_list.remove('MetaTraderData')
+        strategies_list.remove('MinMaxScaler')
         current_module = sys.modules[DeployableStrategyClasses.__module__]
         self.strategies_dict = {}
         for strategy in strategies_list:
@@ -333,7 +335,7 @@ class DeployableStrategyParameters(models.Model):
         algo = ExecutionEngine(
             strategy_class=globals()[kwargs.pop('strategy_class')],
             lot_size=kwargs.pop('lots_field'),
-            login_cred=self.__return_creds(True if kwargs.pop('account_choice') is 'Live' else False),
+            login_cred=self.__return_creds(True if kwargs.pop('account_choice') == 'Live' else False),
             currency_pair=kwargs.pop('currency_pairs_combobox'),
             timeframe=kwargs.pop('timeframes_combobox'),
             repeat_time=kwargs.pop('repeat_time'),

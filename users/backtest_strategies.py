@@ -1,7 +1,9 @@
 import ta
 import numpy as np
 import pandas as pd
+import tensorflow as tf
 from backtesting import Strategy
+from sklearn.preprocessing import MinMaxScaler
 
 class MACrossover(Strategy):
     strategy_name = 'Moving Average Crossover Strategy'
@@ -104,4 +106,40 @@ class StaticGridStrategy(Strategy):
 
             if price < self.grid_lines[0] or price > self.grid_lines[-1]:
                 self.__restart_grid = True
+
+class LSTMStrategy(Strategy):
+    strategy_name = 'LSTM Strategy'
+    ma_period = 10
+    target_pips = 5
+
+    @staticmethod
+    def __return_series(arr : np.array, size : int) -> pd.Series:
+        add_ser = pd.Series(np.concatenate((np.full(size-len(arr), np.nan), arr.T[0])))
+        return add_ser
+
+    def init(self) -> None:
+        model = tf.keras.models.load_model('users\\ml_models\\basic_model.h5')
+        close = pd.Series(self.data['Close']).values
+        scaler = MinMaxScaler(feature_range=(0,1))
+        scaled_data = scaler.fit_transform(close.reshape(-1, 1))
+        X_test = []
+
+        for i in range(60, len(scaled_data)):
+            X_test.append(scaled_data[i-60:i, 0])
+        X_test = np.array(X_test)
+        X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
+        predictions = model.predict(X_test)
+        predictions = scaler.inverse_transform(predictions)
+        self.pred = self.I(self.__return_series, predictions, self.data.df.shape[0])
+        self.ma = self.I(ta.trend.sma_indicator, pd.Series(self.data['Close']), self.ma_period)
+
+    def next(self) -> None:
+        if self.position:
+            pass
+        else:
+            price = self.data['Close'][-1]
+            if self.pred[-1] > price + (self.target_pips * 1e-4) and price > self.ma[-1]:
+                self.buy(tp=self.pred[-1], sl=self.ma[-1])
+            elif self.pred[-1] < price - (self.target_pips * 1e-4) and price < self.ma[-1]:
+                self.sell(tp=self.pred[-1], sl=self.ma[-1]) 
 

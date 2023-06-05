@@ -95,6 +95,7 @@ class BacktestStrategyClasses(models.Model):
     def load_strategy_classes(self) -> None:
         strategies_list = BacktestStrategyClasses.__get_classes_from_file('backtest_strategies')
         strategies_list.remove('Strategy')
+        strategies_list.remove('MinMaxScaler')
         current_module = sys.modules[BacktestStrategyClasses.__module__]
         self.strategies_dict = {}
         for strategy in strategies_list:
@@ -156,7 +157,6 @@ class BacktestStrategyParameters(models.Model):
         data = data_instance.get_data(50000, int(self.timeframe))
         
         #creating a backtesting class object
-        print(kwargs)
         bt = Backtest(
             data=data, 
             strategy=self.strategy_obj, 
@@ -273,6 +273,7 @@ class DeployableStrategyClasses(models.Model):
         strategies_list.remove('AbstractStrategy')
         strategies_list.remove('ExecutionEngine')
         strategies_list.remove('MetaTraderData')
+        strategies_list.remove('MinMaxScaler')
         current_module = sys.modules[DeployableStrategyClasses.__module__]
         self.strategies_dict = {}
         for strategy in strategies_list:

@@ -2,10 +2,11 @@ import ta
 import time
 import numpy as np
 import pandas as pd
+import tensorflow as tf
 import MetaTrader5 as mt
-
 from .DataClass import MetaTraderData
 from abc import ABCMeta, abstractmethod
+from sklearn.preprocessing import MinMaxScaler
 
 class AbstractStrategy(metaclass = ABCMeta):
     _lot_size : float = None
@@ -333,6 +334,21 @@ class StaticGridStrategyDeployable(AbstractStrategy):
     line_count = 8
     grid_gap = 0.005
 
+    def __init__(
+            self, 
+            lot_size: float, 
+            login_cred: dict, 
+            currency_pair: str, 
+            timeframe: int, 
+            repeat_time: int, 
+            deviation: int, 
+            dataframe_size: int, 
+            print_error: bool = False,
+            *args, **kwargs) -> None:
+        super().__init__(lot_size, login_cred, currency_pair, timeframe, repeat_time, deviation, dataframe_size, print_error)
+        self.line_count = kwargs.pop('line_count')
+        self.grid_gap = kwargs.pop('grid_gap')
+
     def init(self) -> None:
         self.__restart_grid = True
         self.__size = self._lot_size // self.line_count
@@ -388,3 +404,55 @@ class StaticGridStrategyDeployable(AbstractStrategy):
 
             if price < self.grid_lines[0] or price > self.grid_lines[-1]:
                 self.__restart_grid = True
+
+class LSTMStrategyDeployable(AbstractStrategy):
+    strategy_name = 'LSTM Strategy'
+    ma_period = 10
+    target_pips = 5
+
+    def __init__(
+            self, 
+            lot_size: float, 
+            login_cred: dict, 
+            currency_pair: str, 
+            timeframe: int, 
+            repeat_time: int, 
+            deviation: int, 
+            dataframe_size: int, 
+            print_error: bool = False,
+            *args, **kwargs) -> None:
+        super().__init__(lot_size, login_cred, currency_pair, timeframe, repeat_time, deviation, dataframe_size, print_error)
+        self.ma_period = kwargs.pop('ma_period')
+        self.target_pips = kwargs.pop('target_pips')
+
+    @staticmethod
+    def __return_series(arr : np.array, size : int) -> pd.Series:
+        add_ser = pd.Series(np.concatenate((np.full(size-len(arr), np.nan), arr.T[0])))
+        return add_ser
+
+    def init(self) -> None:
+        self.model = tf.keras.models.load_model('users\\ml_models\\basic_model.h5')
+
+    def apply_indicators(self) -> None:
+        close = pd.Series(self._data['Close']).values
+        scaler = MinMaxScaler(feature_range=(0,1))
+        scaled_data = scaler.fit_transform(close.reshape(-1, 1))
+        X_test = []
+        for i in range(60, len(scaled_data)):
+            X_test.append(scaled_data[i-60:i, 0])
+        X_test = np.array(X_test)
+        X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
+        predictions = self.model.predict(X_test)
+        predictions = scaler.inverse_transform(predictions)
+        self._data['pred'] = self.__return_series(predictions, self._data.shape[0])
+        self._data['ma'] = ta.trend.sma_indicator(self._data['Close'], self.ma_period)
+
+    def next(self) -> None:
+        if len(self._active_trades) > 0:
+            pass
+        else:
+            price = self._data['Close'][-1]
+            if self._data['pred'][-1] > price + (self.target_pips * 1e-4) and price > self._data['ma'][-1]:
+                self.buy(price=price, tp=self._data['pred'][-1], sl=self._data['ma'][-1])
+            elif self._data['pred'][-1] < price - (self.target_pips * 1e-4) and price < self._data['ma'][-1]:
+                self.sell(price=price, tp=self._data['pred'][-1], sl=self._data['ma'][-1]) 

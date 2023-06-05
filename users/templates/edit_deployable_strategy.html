@@ -4,27 +4,29 @@
 <html>
     <head>
         <title>Pip Prophet</title>
-        <!-- <link rel="icon" type="image/x-icon" href="{% static 'images/globe.png' %}"/> -->
-        <link rel="stylesheet" href="{% static 'stylesheets/backtests.css' %}"/>
+        <link rel="icon" type="image/x-icon" href="{% static 'images/globe.png' %}"/>
+        <link rel="stylesheet" href="{% static 'stylesheets/edit_strategy.css' %}"/>
+        <script>
+            window.onload = function() {
+                const toggleButton = document.getElementById("toggleButton");
+                const options = document.getElementById("options");
+
+                toggleButton.addEventListener("mouseover", function() {
+                    options.style.display = "block";
+                });
+
+                options.addEventListener("mouseleave", function() {
+                    options.style.display = "none";
+                });
+            };
+        </script>
     </head>
     <body>
-        <!--<div>
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                <strong>Message:</strong>
-                {{ message }}
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close"></button>
-                <span aria-hidden="true">&times;</span>
-            </div>
-            {% endfor %}
-        </div>-->
-        <div>
-            <img src="{% static 'images/Logo.png' %}"/>
-        </div>
         {% csrf_token %}
         {% if user.is_authenticated %}
-        <div>
+        <div class="navbar">
             <div class="container">
+                <h1>Edit Strategy</h1>
                 <button id="toggleButton">Options</button>
                 <div id="options" class="hidden">
                     <ul>
@@ -36,6 +38,7 @@
                 </div>
             </div>
         </div>
+<<<<<<< Updated upstream
         <div>
             {% block content %}
             <form id="strategy-modify" method="post">
@@ -52,6 +55,33 @@
                 </ul>
             </div>
             {% endblock %}
+=======
+        <div class="container">
+            <div class="container_form">
+                {% block content %}
+                <form id="strategy-modify" method="post">
+                    {% csrf_token %}
+                    <label for="strategy">Modify your Strategy</label>
+                    {{ bt_params_form.as_p }}
+                    <input type="submit" value="Backtest" name="Backtest">
+                    <input type="submit" value="Optimize" name="Optimize">
+                </form>
+                <div>
+                    <ul>
+                        {% for key, value in results.items %}
+                        <li>{{key}}: {{value}}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div>
+                    <form target="_blank" method="post">
+                        {% csrf_token %}
+                        <input type="submit" value="Plot" name="Plot">
+                    </form>
+                </div>
+                {% endblock %}
+            </div>
+>>>>>>> Stashed changes
         </div>
         {% endif %}
     </body>
